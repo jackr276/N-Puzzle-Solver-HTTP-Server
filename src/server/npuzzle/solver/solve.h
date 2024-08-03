@@ -24,8 +24,7 @@ struct thread_params{
 };
 
 
-//The solve function
+//The solve function. In theory, this is the only thing that we should need to see from solver
 int solve(int N, struct state* start_state, struct state* goal_state);
-
 
 #endif
