@@ -6,6 +6,7 @@
 
 //Link to puzzle.h
 #include "puzzle.h"
+#include <time.h>
 
 
 /*================================= Global variables for convenience =========================== */
@@ -550,6 +551,79 @@ struct state* dequeue(){
 
 	//Give the dequeued pointer back
 	return dequeued;
+}
+
+
+/**
+ * This function generates a starting configuration of appropriate complexity by moving the 0
+ * slider around randomly, for an appropriate number of moves
+ */
+struct state* generate_start_config(const int complexity, const int N){
+	
+	//Create the simplified state that we will use for generation
+	struct state* statePtr = (struct state*)malloc(sizeof(struct state));
+	//Iniitialize the state with helper function
+	initialize_state(statePtr, N);
+
+	int row, col;
+	//Now generate the goal state. Once we create the goal state, we will "mess it up" according to the input number
+	for(short index = 1; index < N*N; index++){
+		//Mathematically generate row position for goal by integer dividing the number by N
+		row = (index-1) / N;
+		//Mathematically generate column position for goal by finding remainder of row division
+		col = (index-1) % N;
+		//Put the index in the correct position
+		statePtr->tiles[row][col] = index;
+	}
+	
+	//Now that we have generated and placed numbers 1-15, we will put the 0 slider in the very last slot
+	statePtr->tiles[N-1][N-1] = 0;
+	//Initialize the zero_row and zero_column position for use later
+	statePtr->zero_row = N-1;
+	statePtr->zero_column = N-1;
+
+	//Set the seed for our random number generation
+	srand(time(NULL));
+
+	//Counter for while loop
+	int i = 0;
+
+	//A variable to store our random move numbers in
+	int random_move;
+	//The main loop of our program. Keep randomly messing up the goal config as many times as specified
+	//In theory -- higher number inputted = more complex config
+	while(i < complexity){
+		//Get a random number from 0 to 4
+		random_move = rand() % 4;	
+
+		//We will keep the same convention as in the solver
+		// 0 = left move, 1 = right move, 2 = down move , 3 = up move
+		
+		//Move left if possible and random_move is 0
+		if(random_move == 0 && statePtr->zero_column > 0){
+			move_left(statePtr);
+		}
+
+		//Move right if possible and random move is 1
+		if(random_move == 1 && statePtr->zero_column < N-1){
+			move_right(statePtr);
+		}
+
+		//Move down if possible and random move is 2
+		if(random_move == 2 && statePtr->zero_row < N-1){
+			move_down(statePtr);
+		}
+
+		//Move up if possible and random move is 3
+		if(random_move == 3 && statePtr->zero_row > 0){
+			move_up(statePtr);
+		}
+
+		//Increment i
+		i++;
+	}
+
+	return statePtr;
 }
 
 

@@ -47,6 +47,7 @@ void initialize_fringe(void);
 void merge_to_closed(struct state*);
 void priority_queue_insert(struct state*);
 struct state* dequeue();
+struct state* generate_start_config(const int, const int);
 int fringe_empty();
 void check_repeating_fringe(struct state**, const int);
 void check_repeating_closed(struct state**, const int);
