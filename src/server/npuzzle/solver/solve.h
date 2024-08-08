@@ -6,11 +6,13 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+//Link to puzzle header file 
 #include "../puzzle/puzzle.h"
 
 
 /**
- * Define a structure for holding all of our thread parameters
+ * Define a structure for holding all of our thread parameters. We will only be using the multithreaded 
+ * version of the solver
  */
 struct thread_params{
 	//The predecessor state
