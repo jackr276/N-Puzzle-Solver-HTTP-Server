@@ -78,7 +78,7 @@ void copy_state(struct state* predecessor, struct state* successor, const int N)
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < N; j++){
 			//Copy tile by tile
-			successor->tiles[i][j] = predecessor->tiles[i][j];
+			*(successor->tiles + i * N + j) = *(predecessor->tiles + i * N + j);
 		}
 	}
 
@@ -102,11 +102,10 @@ static void swap_tiles(int row1, int column1, int row2, int column2, struct stat
 	//Store the first tile in a temp variable
 	short tile = *(statePtr->tiles + row1 * N + column1);
 	//Put the tile from row2, column2 into row1, column1
-	statePtr->tiles[row1][column1] = statePtr->tiles[row2][column2];
+	*(statePtr->tiles + row1 * N + column1) = *(statePtr->tiles + row2 * N + column2);
 	//Put the temp in row2, column2
-	statePtr->tiles[row2][column2] = tile;
+	*(statePtr->tiles + row2 * N + column2) = tile;
 }
-
 
 
 /**
@@ -123,9 +122,9 @@ void move_down(struct state* statePtr, const int N){
 /**
  * Move the 0 slider right by 1 column
  */
-void move_right(struct state* statePtr){
+void move_right(struct state* statePtr, const int N){
 	//Utilize the swap function, move the zero_column right by 1
-	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row, statePtr->zero_column+1, statePtr);	
+	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row, statePtr->zero_column+1, statePtr, N);
 	//Increment the zero_column to keep the position accurate
 	statePtr->zero_column++;
 }
@@ -134,9 +133,9 @@ void move_right(struct state* statePtr){
 /**
  * Move the 0 slider up by 1 row
  */
-void move_up(struct state* statePtr){
+void move_up(struct state* statePtr, const int N){
 	//Utilize the swap function, move the zero_row up by 1
-	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row-1, statePtr->zero_column, statePtr);	
+	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row-1, statePtr->zero_column, statePtr, N);
 	//Decrement the zero_row to keep the position accurate
 	statePtr->zero_row--;
 }
@@ -145,9 +144,9 @@ void move_up(struct state* statePtr){
 /**
  * Move the 0 slider left by 1 column
  */
-void move_left(struct state* statePtr){
+void move_left(struct state* statePtr, const int N){
 	//Utilize the swap function, move the zero_column left by 1
-	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row, statePtr->zero_column-1, statePtr);	
+	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row, statePtr->zero_column-1, statePtr, N);
 	//Decrement the zero_column to keep the position accurate
 	statePtr->zero_column--;
 }
@@ -163,10 +162,8 @@ int states_same(struct state* a, struct state* b, const int N){
 	}
 
 	//Go through each row in the dynamic tile matrix in both states
-	for(int i = 0; i < N; i++){
-		//We can use memcmp to efficiently compare the space pointed to by each pointer
-		if(memcmp(a->tiles[i], b->tiles[i], sizeof(short) * N) != 0){
-			//If we find a difference, return 0
+	for(int i = 0; i < N * N; i++){
+		if(*(a->tiles + i) != *(b->tiles + i)){ 
 			return 0;
 		}
 	}
@@ -205,7 +202,7 @@ void update_prediction_function(struct state* statePtr, const int N){
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < N; j++){
 			//grab the number to be examined
-			selected_num = statePtr->tiles[i][j];
+			selected_num = *(statePtr->tiles + i * N + j);
 
 			//We do not care about 0 as it can move, so skip it
 			if(selected_num == 0){
@@ -246,7 +243,7 @@ void update_prediction_function(struct state* statePtr, const int N){
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < N-1; j++){
 			//Grab the leftmost tile that we'll be comparing to
-			left = statePtr->tiles[i][j];
+			left = *(statePtr->tiles + i * N + j);  
 
 			//If this tile is 0, it's irrelevant so do not explore further
 			if(left == 0){
@@ -256,15 +253,13 @@ void update_prediction_function(struct state* statePtr, const int N){
 			//Now go through every tile in the row after left, this is what makes this generalized linear conflict
 			for(int k = j+1; k < N; k++){
 				//Grab right tile for convenience
-				right = statePtr->tiles[i][k];
+				right = *(statePtr->tiles + i * N + k);
 
 				//Again, if the tile is 0, no use in wasting cycles with it
 				if(right == 0){
 					continue;
 				}
-
-				//Check if both tiles are in their goal row
-				goal_rowCor_left = (left - 1) / N;
+				//Check if both tiles are in their goal row goal_rowCor_left = (left - 1) / N;
 				goal_rowCor_right = (right - 1) / N;
 
 				//If these tiles are not BOTH their goal row, linear conflict does not apply
@@ -286,7 +281,7 @@ void update_prediction_function(struct state* statePtr, const int N){
 	for(int i = 0; i < N-1; i++){
 		for(int j = 0; j < N; j++){
 			//Grab the abovemost tile that we'll be comparing to
-			above = statePtr->tiles[i][j];
+			above = *(statePtr->tiles + i * N + j);
 
 			//If this tile is 0, it's irrelevant so do not explore further
 			if(above == 0){
@@ -296,7 +291,7 @@ void update_prediction_function(struct state* statePtr, const int N){
 			//Now go through every tile in the column below "above", this is what makes it generalized linear conflict
 			for(int k = i+1; k < N; k++){
 				//Grab the below tile for convenience
-				below = statePtr->tiles[k][j];
+				below = *(statePtr->tiles + k * N + j);
 
 				//We don't care about the 0 tile, skip if we find it
 				if(below == 0){
@@ -352,7 +347,7 @@ void initialize_start_goal(char** argv, struct state* start_state, struct state*
 		for (int j = 0; j < N; j++){
 			//Grab the specific tile number from the arguments and place it into the start state
 			tile=atoi(argv[index++]);
-			start_state->tiles[i][j] = tile;
+			*(start_state->tiles + i * N + j) = tile;
 
 			//If we found the zero tile, update the zero row and column
 			if(tile == 0){
@@ -386,11 +381,11 @@ void initialize_start_goal(char** argv, struct state* start_state, struct state*
 		//We can mathematically find row and column positions for inorder numbers
 		row = (num - 1) / N;
 		col = (num - 1) % N;
-		goal_state->tiles[row][col] = num;
+		*(goal_state->tiles + row * N + col) = num;
 	}
 
 	//0 is always at the last spot in the goal state
-	goal_state->tiles[N-1][N-1] = 0;
+	*(goal_state->tiles + N * N - 1) = 0;
 
 	//Initialize everything else in the goal state
 	goal_state->zero_row = (goal_state)->zero_column = N-1;
@@ -564,11 +559,11 @@ struct state* generate_start_config(const int complexity, const int N){
 		//Mathematically generate column position for goal by finding remainder of row division
 		col = (index-1) % N;
 		//Put the index in the correct position
-		statePtr->tiles[row][col] = index;
+		*(statePtr->tiles + row * N + col) = index;
 	}
 	
 	//Now that we have generated and placed numbers 1-15, we will put the 0 slider in the very last slot
-	statePtr->tiles[N-1][N-1] = 0;
+	*(statePtr->tiles + N * N) = 0;
 	//Initialize the zero_row and zero_column position for use later
 	statePtr->zero_row = N-1;
 	statePtr->zero_column = N-1;
@@ -592,22 +587,22 @@ struct state* generate_start_config(const int complexity, const int N){
 		
 		//Move left if possible and random_move is 0
 		if(random_move == 0 && statePtr->zero_column > 0){
-			move_left(statePtr);
+			move_left(statePtr, N);
 		}
 
 		//Move right if possible and random move is 1
 		if(random_move == 1 && statePtr->zero_column < N-1){
-			move_right(statePtr);
+			move_right(statePtr, N);
 		}
 
 		//Move down if possible and random move is 2
 		if(random_move == 2 && statePtr->zero_row < N-1){
-			move_down(statePtr);
+			move_down(statePtr, N);
 		}
 
 		//Move up if possible and random move is 3
 		if(random_move == 3 && statePtr->zero_row > 0){
-			move_up(statePtr);
+			move_up(statePtr, N);
 		}
 
 		//Increment i

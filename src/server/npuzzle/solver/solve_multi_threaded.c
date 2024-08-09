@@ -37,7 +37,7 @@ static void* generator_worker(void* thread_params){
 		//Perform a deep copy from predecessor to successor
 		copy_state(parameters->predecessor, moved, N);
 		//Use helper function to move left
-		move_left(moved);
+		move_left(moved, N);
 
 	//Perform a right move if option is 1 and if possible
 	} else if(option == 1 && parameters->predecessor->zero_column < N-1){
@@ -48,7 +48,7 @@ static void* generator_worker(void* thread_params){
 		//Perform a deep copy from predecessor to successor
 		copy_state(parameters->predecessor, moved, N);
 		//Use helper function to move right 
-		move_right(moved);
+		move_right(moved, N);
 
 	//Perform a down move if option is 2 and if possible
 	} else if(option == 2 && parameters->predecessor->zero_row < N-1){
@@ -59,7 +59,7 @@ static void* generator_worker(void* thread_params){
 		//Perform a deep copy from predecessor to successor
 		copy_state(parameters->predecessor, moved, N);
 		//Use helper function to move down	
-		move_down(moved);
+		move_down(moved, N);
 
 	//Perform an up move if option is 3 and if possible
 	} else if(option == 3 && parameters->predecessor->zero_row > 0){
@@ -70,7 +70,7 @@ static void* generator_worker(void* thread_params){
 		//Perform a deep copy from predecessor to successor
 		copy_state(parameters->predecessor, moved, N);
 		//Use helper function to move up	
-		move_up(moved);
+		move_up(moved, N);
 	}
 	
 	//Whether it's null or not, place the pointer into moved
@@ -237,44 +237,4 @@ int solve(int N, struct state* start_state, struct state* goal_state){
 	//If we end up here, fringe became NULL with no goal configuration found, so there is no solution
 	printf("No solution.\n");
 	return 0;
-}
-
-
-/**
- * The main function simply makes the needed calls to the initialize and solve function after checking command
- * line arguments
- */
-int main(int argc, char** argv){
-	//The size of our N puzzle
-	int N;
-
-	//If the user put in a non-integer or a nonpositive integer, print an error
-	if(sscanf(argv[1], "%d", &N) != 1 || N < 1){
-		printf("Incorrect type of program arguments.\n");
-		printf("Usage: ./solve_multi_threaded <N> <n0. . .nN>\n");
-		printf("Where <N> is the number of rows/columns, followed by the matrix in row-major order.\n\n");
-		return 1;
-	}
-
-	//Check if the number of arguments is correct. If not, exit the program and print an error
-	if(argc != N*N + 2){
-		//Give an error message
-		printf("Incorrect number of program arguments.\n");
-		printf("Usage: ./solve_multi_threaded <N> <n0. . .nN>\n");
-		printf("Where <N> is the number of rows/columns, followed by the matrix in row-major order.\n\n");
-		return 1;
-	}
-
-	//Important: Move the address up by 1 so that initialize_start_goal can only see the initial config
-	argv += 1;
-
-	//The starting and goal states, must create and reserve space
-	struct state* start_state = (struct state*)malloc(sizeof(struct state));
-	struct state* goal_state = (struct state*)malloc(sizeof(struct state));
-
-	//Initialize the goal and start states 
-	initialize_start_goal(argv, start_state, goal_state, N);
-
-	//Call the solve() funciton and hand off the rest of the program execution to it
-	return solve(N, start_state, goal_state);
 }
