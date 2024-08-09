@@ -28,12 +28,7 @@ int next_fringe_index = 0;
  */
 void initialize_state(struct state* statePtr, const int N){
 	//Declare all of the pointers needed for each row
-	statePtr->tiles = (short**)malloc(sizeof(short*) * N);
-
-	//For each row, allocate space for N integers
-	for(int i = 0; i < N; i++){
-		statePtr->tiles[i] = (short*)malloc(sizeof(short) * N);
-	}
+	statePtr->tiles = (short*)malloc(sizeof(short) * N * N);
 }
 
 
@@ -43,11 +38,8 @@ void initialize_state(struct state* statePtr, const int N){
 void destroy_state(struct state* statePtr, const int N){
 	//Go through row by row, freeing each one
 	for(int i = 0; i < N; i++){
-		free(statePtr->tiles[i]);
+		free(statePtr->tiles);
 	}
-
-	//Once all rows are free, free the array of row pointers
-	free(statePtr->tiles);
 }
 
 
@@ -62,10 +54,10 @@ void print_state(struct state* statePtr, const int N, int option){
 			//Support printing of states with 2 or 3 digit max integers
 			if(N < 11){	
 				//With numbers less than 11, N^2 is at most 99, so only 2 digits needed
-				printf("%2d ", statePtr->tiles[i][j]);
-			} else {
+				printf("%2d ", *(statePtr->tiles + i * N + j));
+
 				//Ensures printing of large states will not be botched
-				printf("%3d ", statePtr->tiles[i][j]);
+				printf("%3d ", *(statePtr->tiles + i * N + j));
 			}
 		}
 		//Support printing in a single line
@@ -106,9 +98,9 @@ void copy_state(struct state* predecessor, struct state* successor, const int N)
  * A simple function that swaps two tiles in the provided state
  * Note: The swap function assumes all row positions are valid, this must be checked by the caller
  */
-static void swap_tiles(int row1, int column1, int row2, int column2, struct state* statePtr){
+static void swap_tiles(int row1, int column1, int row2, int column2, struct state* statePtr, const int N){
 	//Store the first tile in a temp variable
-	short tile = statePtr->tiles[row1][column1];
+	short tile = *(statePtr->tiles + row1 * N + column1);
 	//Put the tile from row2, column2 into row1, column1
 	statePtr->tiles[row1][column1] = statePtr->tiles[row2][column2];
 	//Put the temp in row2, column2
@@ -120,9 +112,9 @@ static void swap_tiles(int row1, int column1, int row2, int column2, struct stat
 /**
  * Move the 0 slider down by 1 row
  */
-void move_down(struct state* statePtr){
+void move_down(struct state* statePtr, const int N){
 	//Utilize the swap function, move the zero_row down by 1
-	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row+1, statePtr->zero_column, statePtr);	
+	swap_tiles(statePtr->zero_row, statePtr->zero_column, statePtr->zero_row+1, statePtr->zero_column, statePtr, N);
 	//Increment the zero_row to keep the position accurate
 	statePtr->zero_row++;
 }
