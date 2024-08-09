@@ -259,7 +259,8 @@ void update_prediction_function(struct state* statePtr, const int N){
 				if(right == 0){
 					continue;
 				}
-				//Check if both tiles are in their goal row goal_rowCor_left = (left - 1) / N;
+				//Check if both tiles are in their goal row 
+				goal_rowCor_left = (left - 1) / N;
 				goal_rowCor_right = (right - 1) / N;
 
 				//If these tiles are not BOTH their goal row, linear conflict does not apply
