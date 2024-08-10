@@ -35,9 +35,10 @@ int run_command_line(){
 	printf("Enter the complexity of the initial configuration: ");
 	scanf("%d", &complexity);
  
-	//Generate the starting configuration
+	//Generate the starting and goal configuration
 	struct state* initial = generate_start_config(complexity, N);
-	
+	struct state* goal = initialize_goal(N);
+
 
 	return 0;
 }
@@ -53,7 +54,9 @@ int main(int argc, char** argv){
 
 	//The user can decide to initialize in remote server mode in command line mode
 	while((opt = getopt(argc, argv, "dr")) != -1){
+		//Based on our option here
 		switch(opt){
+			//User wants debug mode
 			case 'd':
 				run_command_line();
 				break;
