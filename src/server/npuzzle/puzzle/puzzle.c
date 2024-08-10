@@ -6,6 +6,7 @@
 
 //Link to puzzle.h
 #include "puzzle.h"
+#include <stdlib.h>
 
 
 /*================================= Global variables for convenience =========================== */
@@ -35,11 +36,9 @@ void initialize_state(struct state* statePtr, const int N){
 /**
  * The destroy_state function does the exact reverse of the initialize_state function to properly free memory
  */
-void destroy_state(struct state* statePtr, const int N){
-	//Go through row by row, freeing each one
-	for(int i = 0; i < N; i++){
-		free(statePtr->tiles);
-	}
+void destroy_state(struct state* statePtr){
+	//We only need to free the tile pointer in this case
+	free(statePtr->tiles);
 }
 
 
@@ -329,50 +328,12 @@ void update_prediction_function(struct state* statePtr, const int N){
 
 
 /**
- * The initialization function takes in the command line arguments and translates them into the initial
- * state. It also initializes the goal state mathematically, as it is always the same
- * Note: Assumes a correct number of command line arguments(16 numbers), must be checked by caller
+ * This initialization function mathematically creates a goal state for a given 
+ * size N
  */
-void initialize_start_goal(char** argv, struct state* start_state, struct state* goal_state, const int N){
-	/* Begin by creating the start state */
-
-	//Dynamically allocate memory needed in the start_state
-	initialize_state(start_state, N);
-
-	//Start at 1, argv[0] is program name and argv has been adjusted up by 1 to only contain the start state information
-	int index = 1;
-	short tile;
-
-	//Insert everything into the tiles matrix
-	for (int i = 0; i < N; i++){
-		for (int j = 0; j < N; j++){
-			//Grab the specific tile number from the arguments and place it into the start state
-			tile=atoi(argv[index++]);
-			*(start_state->tiles + i * N + j) = tile;
-
-			//If we found the zero tile, update the zero row and column
-			if(tile == 0){
-				start_state->zero_row = i;
-				start_state->zero_column = j;
-			}
-		}
-	}
-
-	//Initialize everything else in the start state
-	start_state->total_cost = 0;
-	start_state->current_travel = 0;
-	start_state->heuristic_cost = 0;
-	start_state->next = NULL;
-	//Important -- must have no predecessor(root of search tree)
-	start_state->predecessor = NULL;
-
-	//Print to the console for the user
-	printf("\nInitial state\n");
-	print_state(start_state, N, 0);
-
-
-	/* Now we create the goal state */	
-	
+struct state* initialize_goal(const int N){
+	//Initial allocation
+	struct state* goal_state = (struct state*)malloc(sizeof(struct state));
 	//Dynamically allocate the memory needed in the goal_state
 	initialize_state(goal_state, N);	
 
@@ -393,11 +354,9 @@ void initialize_start_goal(char** argv, struct state* start_state, struct state*
 	goal_state->total_cost = 0;
 	goal_state->current_travel = 0;
 	goal_state->heuristic_cost = 0;
-	goal_state->next=NULL;
-
-	//Print to the console for the user
-	printf("Goal state\n");
-	print_state(goal_state, N, 0);
+	goal_state->next=NULL; 
+	
+	return goal_state;
 }
 
 
@@ -546,7 +505,6 @@ struct state* dequeue(){
  * slider around randomly, for an appropriate number of moves
  */
 struct state* generate_start_config(const int complexity, const int N){
-	
 	//Create the simplified state that we will use for generation
 	struct state* statePtr = (struct state*)malloc(sizeof(struct state));
 	//Iniitialize the state with helper function
@@ -556,15 +514,15 @@ struct state* generate_start_config(const int complexity, const int N){
 	//Now generate the goal state. Once we create the goal state, we will "mess it up" according to the input number
 	for(short index = 1; index < N*N; index++){
 		//Mathematically generate row position for goal by integer dividing the number by N
-		row = (index-1) / N;
+		row = (index - 1) / N;
 		//Mathematically generate column position for goal by finding remainder of row division
-		col = (index-1) % N;
+		col = (index - 1) % N;
 		//Put the index in the correct position
 		*(statePtr->tiles + row * N + col) = index;
 	}
 	
 	//Now that we have generated and placed numbers 1-15, we will put the 0 slider in the very last slot
-	*(statePtr->tiles + N * N) = 0;
+	*(statePtr->tiles + N * N - 1) = 0;
 	//Initialize the zero_row and zero_column position for use later
 	statePtr->zero_row = N-1;
 	statePtr->zero_column = N-1;
@@ -638,7 +596,7 @@ void check_repeating_fringe(struct state** statePtr, const int N){
 		//If the states match, we free the pointer and exit the loop
 		if(states_same(*statePtr, fringe[i], N)){
 			//Properly tear down the dynamic array in the state to avoid memory leaks
-			destroy_state(*statePtr, N);
+			destroy_state(*statePtr);
 			//Free the pointer to the state
 			free(*statePtr);
 			//Set the pointer to be null as a warning
@@ -666,7 +624,7 @@ void check_repeating_closed(struct state** statePtr, const int N){
 		//If at any point we find that the states are the same
 		if(states_same(closed[i], *statePtr, N)){
 			//Free both the internal memory and the state pointer itself
-			destroy_state(*statePtr, N);
+			destroy_state(*statePtr);
 			free(*statePtr);
 			//Set to null as a warning
 			*statePtr = NULL;
