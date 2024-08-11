@@ -54,7 +54,7 @@ void print_state(struct state* statePtr, const int N, int option){
 			if(N < 11){	
 				//With numbers less than 11, N^2 is at most 99, so only 2 digits needed
 				printf("%2d ", *(statePtr->tiles + i * N + j));
-
+			} else {
 				//Ensures printing of large states will not be botched
 				printf("%3d ", *(statePtr->tiles + i * N + j));
 			}

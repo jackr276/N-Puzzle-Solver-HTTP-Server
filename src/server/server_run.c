@@ -4,6 +4,7 @@
  */
 
 //Hook into our and the npuzzle
+#include "npuzzle/solver/solve.h"
 #include "remote-server/server.h"
 #include "npuzzle/puzzle/puzzle.h"
 #include <stdio.h>
@@ -39,6 +40,7 @@ int run_command_line(){
 	struct state* initial = generate_start_config(complexity, N);
 	struct state* goal = initialize_goal(N);
 
+	solve(N, initial, goal, 1);
 
 	return 0;
 }
