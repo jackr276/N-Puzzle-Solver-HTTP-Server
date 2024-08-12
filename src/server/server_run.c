@@ -17,6 +17,7 @@
  * command line, so all remote server functionality is ignored
  */
 int run_command_line(){
+	//Welcome message
 	printf("===========================================================================\n");
 	printf("Welcome to the N Puzzle Solver\n");
 	printf("===========================================================================\n");
@@ -40,9 +41,8 @@ int run_command_line(){
 	struct state* initial = generate_start_config(complexity, N);
 	struct state* goal = initialize_goal(N);
 
-	solve(N, initial, goal, 1);
-
-	return 0;
+	//Simply make a call to solve and let it go from there
+	return solve(N, initial, goal, 1);
 }
 
 
@@ -60,6 +60,7 @@ int main(int argc, char** argv){
 		switch(opt){
 			//User wants debug mode
 			case 'd':
+				//Hand everything off to the above method
 				run_command_line();
 				break;
 			case 'r':

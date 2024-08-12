@@ -656,4 +656,3 @@ int merge_to_fringe(struct state* successors[4]){
 	//Return how many valid successors that we had
 	return valid_successors;
 }
-

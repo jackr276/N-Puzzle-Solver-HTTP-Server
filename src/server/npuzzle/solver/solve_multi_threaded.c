@@ -152,7 +152,7 @@ void print_solution_path(struct state* solution_path, const int N, int pathlen, 
 	printf("Memory consumed: %.2f MB\n", (sizeof(struct state) + N*N*sizeof(short)) * num_unique_configs / 1048576.0);
 	//Print out CPU time(NOT wall time) spent
 	printf("Total CPU time spent: %.7f seconds\n\n", time_spent_CPU);	
-	printf("------------------------------------------------------\n\n");
+	printf("==========================================================\n\n");
 }
 
 
@@ -162,6 +162,15 @@ void print_solution_path(struct state* solution_path, const int N, int pathlen, 
  * For mode: 0 equals web client solve, 1 equals debug(CLI) mode
  */
 int solve(int N, struct state* start_state, struct state* goal_state, int solver_mode){
+	//If we are in debug mode, we will start off by printing to the console
+	if(solver_mode == 1){
+		printf("\nInitial State:\n");
+		print_state(start_state, N, 0);
+		printf("Goal state\n");
+		print_state(goal_state, N, 0);
+	} 
+	
+
 	//We will keep track of the time taken to execute
 	clock_t begin_CPU = clock();
 
