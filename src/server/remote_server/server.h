@@ -15,6 +15,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <string.h>
+#include <unistd.h>
+
 
 /**
  * Define a struct for a server that contains all of the needed information 

@@ -4,13 +4,13 @@
  */  
 
 #include "server.h"
+//For multithreading
 #include <pthread.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <string.h>
-#include <unistd.h>
 
+
+/**
+ * Stack allocate a server object with the needed parameters
+ */
 struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface){
 	//Stack allocate our server(may change this)
 	struct Server server;
@@ -51,7 +51,12 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 }
 
 
+/**
+ * Thread worker method: handles each new request on a separate thread. This allows us to potentially have
+ * more than one connection active at a time if we'd like
+ */
 static void* handle_request(void* server_thread_params){
+	//Cast appropriately
 	struct server_thread_params* params = (struct server_thread_params*)(server_thread_params);
 
 	//Allocate our buffer
@@ -69,7 +74,6 @@ static void* handle_request(void* server_thread_params){
 	} else {
 		printf("ERROR: Buffer could not be read\n");
 	}
-
 
 	//Craft the response
     char *response = "HTTP/1.1 200 OK\r\n"
@@ -95,6 +99,10 @@ static void* handle_request(void* server_thread_params){
 }
 
 
+/**
+ * Run the server that is referenced in the parameter. This method serves as a thread entry point for
+ * the concurrent server handling that we have
+ */
 void run(struct Server* server){
 	while(1){
 		printf("Server active and waiting for connection at Address %d : %d\n", AF_INET, server->port);

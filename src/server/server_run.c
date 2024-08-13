@@ -6,7 +6,7 @@
 //Hook into our and the npuzzle
 #include "npuzzle/solver/solve.h"
 #include "npuzzle/puzzle/puzzle.h"
-#include "remote-server/server.h"
+#include "remote_server/server.h"
 #include <stdio.h>
 #include <unistd.h>
 
