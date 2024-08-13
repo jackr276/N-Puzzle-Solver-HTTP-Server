@@ -12,6 +12,9 @@
 //For our socket functionality
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/socket.h>
 
 /**
  * Define a struct for a server that contains all of the needed information 
@@ -25,7 +28,7 @@ typedef struct {
 	u_int32_t backlog;
 	u_int64_t interface;	
 
-	u_int32_t socket;
+	int socket;
 	struct sockaddr_in socket_addr;
 	
 } Server;
