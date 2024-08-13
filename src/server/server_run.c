@@ -5,8 +5,8 @@
 
 //Hook into our and the npuzzle
 #include "npuzzle/solver/solve.h"
-#include "remote-server/server.h"
 #include "npuzzle/puzzle/puzzle.h"
+#include "remote-server/server.h"
 #include <stdio.h>
 #include <unistd.h>
 
@@ -47,6 +47,15 @@ int run_command_line(){
 
 
 /**
+ * Run the server side methods to make this a truly "remote" N Puzzle Solver
+ */
+int run_server(){
+	struct Server server = create_server(AF_INET, 2022, SOCK_STREAM, 0, 10, INADDR_ANY);
+	run(&server);
+	return 0;
+}
+
+/**
  * Our main function here will use getopt to split apart our command line
  * arguments. It will be possible to use debug mode to void all of the server
  * funtionality entirely
@@ -63,9 +72,9 @@ int main(int argc, char** argv){
 				//Hand everything off to the above method
 				run_command_line();
 				break;
+			//There is some error with the way clang lsp handles case statements
 			case 'r':
-				Server server = create_server(AF_INET, 2022, SOCK_STREAM, 0, 10, INADDR_ANY);
-				run(&server);
+				run_server();
 				//Server run method
 				break;
 			case '?':

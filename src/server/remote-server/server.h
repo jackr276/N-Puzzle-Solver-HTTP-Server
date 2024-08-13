@@ -20,7 +20,7 @@
  * Define a struct for a server that contains all of the needed information 
  * for transmission
  */
-typedef struct {
+struct Server{
 	u_int32_t domain;
 	u_int32_t port;	
 	u_int32_t service;
@@ -31,11 +31,11 @@ typedef struct {
 	int socket;
 	struct sockaddr_in socket_addr;
 	
-} Server;
+};
 
 //A constructor for our server
-Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface);
+struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface);
 //A function that serves to start everything up
-void run(Server* server);
+void run(struct Server* server);
 
 #endif

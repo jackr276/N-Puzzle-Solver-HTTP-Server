@@ -10,9 +10,9 @@
 #include <string.h>
 #include <unistd.h>
 
-Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface){
+struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface){
 	//Stack allocate our server(may change this)
-	Server server;
+	struct Server server;
 
 	server.domain = domain; 
 	server.port = port;
@@ -50,7 +50,7 @@ Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int3
 }
 
 
-void run(Server *server){
+void run(struct Server *server){
 	//Allocate our buffer
 	char buffer[BUFFER];
 
