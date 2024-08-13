@@ -30,9 +30,17 @@ struct Server{
 
 	int socket;
 	struct sockaddr_in socket_addr;
-	
 };
 
+/**
+ */
+struct server_thread_params{
+	struct Server* server;	
+	int inbound_socket;
+};
+
+
+	
 //A constructor for our server
 struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface);
 //A function that serves to start everything up
