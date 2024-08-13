@@ -91,25 +91,28 @@ static void* handle_request(void* server_thread_params){
 	//Request is handled, close the new socket
 	close(params->inbound_socket);
 
-	free(params);
 	return NULL;
 }
 
-void run(struct Server *server){
+
+void run(struct Server* server){
 	while(1){
 		printf("Server active and waiting for connection at Address %d : %d\n", AF_INET, server->port);
 		//Grab the length of our socket's address
 		int address_length = sizeof(server->socket_addr);
 		//Accept a new connection and create a new connected socket
 		int new_socket = accept(server->socket, (struct sockaddr*)(&server->socket_addr), (socklen_t*)(&address_length));
+		
+		//Stack allocate a thread paramater structure
+		struct server_thread_params params;
+		params.inbound_socket = new_socket;
+		params.server = server; 
 
-		struct server_thread_params* params = (struct server_thread_params*)malloc(sizeof(struct server_thread_params));
-		params->server = server;
-		params->inbound_socket = new_socket;
-
+		//Stack allocate a new thread;
 		pthread_t request_handler;
 
-		pthread_create(&request_handler, NULL, handle_request , params);
+		//Create the thread to handle the request
+		pthread_create(&request_handler, NULL, handle_request, &params);
 	}
 }
 
