@@ -16,5 +16,7 @@ struct response{
  */
 struct response initial_landing_response();
 
+
+
 #endif
 
