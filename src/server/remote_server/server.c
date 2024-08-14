@@ -74,23 +74,18 @@ static char* IPv4_addr_parser(const unsigned int inet_addr){
  
 	//Grab the first byte of data
 	BYTE first = (inet_addr >> 24) & 0xFF;
-	//Put this into our string
-	sprintf(ip_addr, "%u.", first); 
 
 	//Grab the second byte of data
 	BYTE second = (inet_addr >> 16) & 0xFF;
-	//Put this into our string
-	sprintf(ip_addr, "%u.", second); 
 
 	//Grab the third byte of data
 	BYTE third = (inet_addr >> 8) & 0xFF;
-	//Put this into our string
-	sprintf(ip_addr, "%u.", third); 
 
 	//Finally store the fourth byte
 	BYTE fourth = inet_addr & 0xFF;
-	sprintf(ip_addr, "%u", fourth); 
 
+	//Print to the string
+	sprintf(ip_addr, "%u.%u.%u.%u", first, second, third, fourth);
 
 	return ip_addr;
 }
@@ -156,6 +151,7 @@ static void* handle_request(void* server_thread_params){
  * the concurrent server handling that we have
  */
 void run(struct Server* server){
+	//Grab the ip address
 	unsigned int ip = server->socket_addr.sin_addr.s_addr;
 
 	//Translate our current ip to be human readable
