@@ -7,6 +7,10 @@
 #include "../response_builder/response_builder.h"
 //For multithreading
 #include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 
 /**
@@ -71,27 +75,38 @@ static void* handle_request(void* server_thread_params){
 	//Allocate our buffer
 	char buffer[BUFFER];
 
-	//Read our request into the buffer
-	ssize_t bytes_read = read(params->inbound_socket, buffer, BUFFER - 1);
+	//Store the size of what we've read
+	ssize_t bytes_read;
+	ssize_t bytes_written;
+	struct response r;
 
-	//If we actually read something
-	if(bytes_read >= 0){
-		//Null terminate the string
-		buffer[bytes_read] = '\0';
-		//Probably will get rid of this
-		puts(buffer);
-	} else {
-		printf("ERROR: Buffer could not be read\n");
+	while(1){ 	
+		//Receive data from a connection
+		bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
+
+		//For debugging
+		printf("%s\n", buffer);
+
+		//If we didn't read anything, we will leave
+		if(bytes_read <= 0){
+			printf("No data received from client\n");
+			break;
+		}
+
+		//Craft our response
+		r = initial_landing_response();
+	
+		//Send a response
+		bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+
+		//If the 
+		if(bytes_written == -1){
+			printf("ERROR: Client did not receive sent data. Connection will be closed.");
+			break;
+		}
 	}
 
-	//Stack allocate our intial respone
-	struct response r;
-	r = initial_landing_response();
-
-	//Write our response to the socket
-	write(params->inbound_socket, r.html, strlen(r.html) );
-
-	sleep(4);
+	printf("Client disconnected successfully.\n");
 	//Request is handled, close the new socket
 	close(params->inbound_socket);
 
@@ -104,8 +119,11 @@ static void* handle_request(void* server_thread_params){
  * the concurrent server handling that we have
  */
 void run(struct Server* server){
+	//Let the user know that we are listening
+	printf("Server active and waiting for connection at Address %d : %d\n", AF_INET, server->port);
+
+	//Listen for new connections
 	while(1){
-		printf("Server active and waiting for connection at Address %d : %d\n", AF_INET, server->port);
 		//Grab the length of our socket's address
 		int address_length = sizeof(server->socket_addr);
 		//Accept a new connection and create a new connected socket
@@ -116,8 +134,12 @@ void run(struct Server* server){
 		params.inbound_socket = new_socket;
 		params.server = server; 
 
+		//Let the logs know what is happening
+		printf("A new connection has been detected and being handed to a server thread.\n");
+
 		//Stack allocate a new thread;
 		pthread_t request_handler;
+
 
 		//Create the thread to handle the request
 		pthread_create(&request_handler, NULL, handle_request, &params);

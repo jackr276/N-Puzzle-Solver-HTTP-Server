@@ -15,7 +15,9 @@ struct response initial_landing_response(){
 
 	//Populate the initial HTML
 	r.html = "HTTP/1.1 200 OK\r\n"
-             "Content-Type: text/html; charset=UTF-8\r\n\r\n"
+			 "Connection: keep-alive\r\n"
+             "Content-Type: text/html; charset=UTF-8\r\n"
+			 "Keep-Alive: timeout=15, max=1000\r\n\r\n"
              "<!DOCTYPE html>\r\n"
              "<html>\r\n"
              "<head>\r\n"
@@ -25,7 +27,7 @@ struct response initial_landing_response(){
 			 "<h1>N Puzzle Solver</h1>\r\n"
 			 "<form>\r\n"
   			 "<label for = \"N\">First name:</label>\r\n"
-  			 "<input type=\"text\" id=\"N\" name=\"N\"><br><br>\r\n"
+  			 "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\"><br><br>\r\n"
 		     "<input type=\"submit\" value=\"Solve\">\r\n"
 			 "</form>\r\n"
              "</body>\r\n"
