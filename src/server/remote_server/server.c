@@ -6,6 +6,7 @@
 #include "server.h"
 #include "../response_builder/response_builder.h"
 //For multithreading
+#include <netinet/in.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -64,12 +65,34 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 }
 
 
-static char* ipv4_addr_parser(const unsigned int af_inet){ 
-	//###.###.###.###\0 is 16 characters at most  
-	char ip_addr[16];
-
+static char* IPv4_addr_parser(const unsigned int inet_addr){ 
+	//For our uses in this function only
 	typedef unsigned char BYTE;
 
+	//IPv4 address: ###.###.###.###\0 is 16 characters at most  
+	char* ip_addr = malloc(sizeof(char) * 16);
+ 
+	//Grab the first byte of data
+	BYTE first = (inet_addr >> 24) & 0xFF;
+	//Put this into our string
+	sprintf(ip_addr, "%u.", first); 
+
+	//Grab the second byte of data
+	BYTE second = (inet_addr >> 16) & 0xFF;
+	//Put this into our string
+	sprintf(ip_addr, "%u.", second); 
+
+	//Grab the third byte of data
+	BYTE third = (inet_addr >> 8) & 0xFF;
+	//Put this into our string
+	sprintf(ip_addr, "%u.", third); 
+
+	//Finally store the fourth byte
+	BYTE fourth = inet_addr & 0xFF;
+	sprintf(ip_addr, "%u", fourth); 
+
+
+	return ip_addr;
 }
 
 /**
@@ -133,8 +156,16 @@ static void* handle_request(void* server_thread_params){
  * the concurrent server handling that we have
  */
 void run(struct Server* server){
+	unsigned int ip = server->socket_addr.sin_addr.s_addr;
+
+	//Translate our current ip to be human readable
+	char* ip_addr = IPv4_addr_parser(ip);
+
 	//Let the user know that we are listening
-	printf("Server active and waiting for connection at Address %d : %d\n", AF_INET, server->port);
+	printf("Server active and waiting for connection at Address %s:%d\n", ip_addr, server->port);
+	//Release this from memory
+	free(ip_addr);
+
 
 	//Listen for new connections
 	while(1){
@@ -159,4 +190,3 @@ void run(struct Server* server){
 		pthread_create(&request_handler, NULL, handle_request, &params);
 	}
 }
-
