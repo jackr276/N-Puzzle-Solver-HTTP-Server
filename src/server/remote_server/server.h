@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 
 /**
@@ -37,6 +38,7 @@ struct Server{
 };
 
 /**
+ * Thread paramaters for the multithreaded client connection handling
  */
 struct server_thread_params{
 	struct Server* server;	

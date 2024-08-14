@@ -64,6 +64,14 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 }
 
 
+static char* ipv4_addr_parser(const unsigned int af_inet){ 
+	//###.###.###.###\0 is 16 characters at most  
+	char ip_addr[16];
+
+	typedef unsigned char BYTE;
+
+}
+
 /**
  * Thread worker method: handles each new request on a separate thread. This allows us to potentially have
  * more than one connection active at a time if we'd like
@@ -80,12 +88,14 @@ static void* handle_request(void* server_thread_params){
 	ssize_t bytes_written;
 	struct response r;
 
+	//Reception loop, does not seem to work
 	while(1){ 	
 		//Receive data from a connection
 		bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
 
 		//For debugging
 		printf("%s\n", buffer);
+		printf("Bytes read: %ld\n", bytes_read);
 
 		//If we didn't read anything, we will leave
 		if(bytes_read <= 0){
@@ -106,11 +116,15 @@ static void* handle_request(void* server_thread_params){
 		}
 	}
 
-	printf("Client disconnected successfully.\n");
+	//Shutdown the socket
+	shutdown(params->inbound_socket, SHUT_RDWR);
+
 	//Request is handled, close the new socket
 	close(params->inbound_socket);
 
-	return NULL;
+	//Exit the threads
+	printf("Client disconnected successfully.\n");
+	pthread_exit(NULL);
 }
 
 
@@ -128,14 +142,14 @@ void run(struct Server* server){
 		int address_length = sizeof(server->socket_addr);
 		//Accept a new connection and create a new connected socket
 		int new_socket = accept(server->socket, (struct sockaddr*)(&server->socket_addr), (socklen_t*)(&address_length));
-		
+	
 		//Stack allocate a thread paramater structure
 		struct server_thread_params params;
 		params.inbound_socket = new_socket;
 		params.server = server; 
 
 		//Let the logs know what is happening
-		printf("A new connection has been detected and being handed to a server thread.\n");
+		printf("A new connection has been detected and is being handed to a new server thread.\n");
 
 		//Stack allocate a new thread;
 		pthread_t request_handler;
