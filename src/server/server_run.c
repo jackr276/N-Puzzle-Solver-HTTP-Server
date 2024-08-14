@@ -71,14 +71,16 @@ int main(int argc, char** argv){
 				//Hand everything off to the above method
 				run_command_line();
 				break;
-			//There is some error with the way clang lsp handles case statements
+			//User wants remote server mode
 			case 'r':
 				run_server();
 				//Server run method
 				break;
+			//Unknown/default case
 			case '?':
 			default:
 				printf("Error: Invalid command line arguments entered");
+				exit(1);
 		}
 	}
 

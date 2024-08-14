@@ -78,8 +78,8 @@ static void* handle_request(void* server_thread_params){
 		printf("ERROR: Buffer could not be read\n");
 	}
 
+	//Stack allocate our intial respone
 	struct response r;
-
 	r = initial_landing_response();
 
 	//Write our response to the socket

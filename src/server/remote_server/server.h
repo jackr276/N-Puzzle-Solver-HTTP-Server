@@ -6,7 +6,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-//Give ourselves a data buffer
+//Give ourselves a data buffer, this may be more 
 #define BUFFER 20000
 
 //For our socket functionality
