@@ -22,7 +22,12 @@ struct response initial_landing_response(){
              "<title>N Puzzle Solver</title>\r\n"
              "</head>\r\n"
              "<body>\r\n"
-             "I work\r\n"
+			 "<h1>N Puzzle Solver</h1>\r\n"
+			 "<form>\r\n"
+  			 "<label for = \"N\">First name:</label>\r\n"
+  			 "<input type=\"text\" id=\"N\" name=\"N\"><br><br>\r\n"
+		     "<input type=\"submit\" value=\"Solve\">\r\n"
+			 "</form>\r\n"
              "</body>\r\n"
              "</html>\r\n";
 

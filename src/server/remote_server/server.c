@@ -36,18 +36,24 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		printf("ERROR: Socket initializiation failed");
 		exit(1);
 	}
+	
+	printf("Socket Initialized\n");
 
 	//Now attempt to bind the socket to the address. If we can't, hard exit
 	if(bind(server.socket, (struct sockaddr*)(&server.socket_addr), sizeof(server.socket_addr)) < 0){
 		printf("ERROR: Socket failed to bind");
 		exit(1);
 	}
+
+	printf("Socket Bound\n");
  
 	//Finally attempt to begin listening. If that fails, hard exit
 	if(listen(server.socket, server.backlog) < 0){
 		printf("ERROR: Socket failed to start listening");
 		exit(1);
 	}
+
+	printf("Socket Listening\n");
 
 	//Return our stack allocated server
 	return server;
@@ -85,7 +91,7 @@ static void* handle_request(void* server_thread_params){
 	//Write our response to the socket
 	write(params->inbound_socket, r.html, strlen(r.html) );
 
-	sleep(15);
+	sleep(4);
 	//Request is handled, close the new socket
 	close(params->inbound_socket);
 

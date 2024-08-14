@@ -6,6 +6,8 @@
 #ifndef RESPONSE_BUILDER_H
 #define RESPONSE_BUILDER_H
 
+#include <string.h>
+
 /**
  * A response struct that holds the various things needed with our html string
  */
