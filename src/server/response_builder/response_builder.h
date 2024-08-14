@@ -6,10 +6,14 @@
 #ifndef RESPONSE_BUILDER_H
 #define RESPONSE_BUILDER_H
 
+/**
+ * A response struct that holds the various things needed with our html string
+ */
 struct response{
 	//The response mainly contains the HTML code that we want to serve up
 	char* html;
 };
+
 
 /**
  * Server up the initial landing page response

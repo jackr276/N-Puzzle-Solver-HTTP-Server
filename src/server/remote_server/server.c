@@ -4,6 +4,7 @@
  */  
 
 #include "server.h"
+#include "../response_builder/response_builder.h"
 //For multithreading
 #include <pthread.h>
 
@@ -15,12 +16,14 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 	//Stack allocate our server(may change this)
 	struct Server server;
 
+	//Assign all appropriate data
 	server.domain = domain; 
 	server.port = port;
 	server.service = service;
 	server.backlog = backlog;
 	server.interface = interface;
 
+	//Assign all of these as well
 	server.socket_addr.sin_family = domain; 
 	server.socket_addr.sin_port = htons(port);
 	server.socket_addr.sin_addr.s_addr = htonl(interface);
@@ -75,21 +78,12 @@ static void* handle_request(void* server_thread_params){
 		printf("ERROR: Buffer could not be read\n");
 	}
 
-	//Craft the response
-    char *response = "HTTP/1.1 200 OK\r\n"
-                     "Content-Type: text/html; charset=UTF-8\r\n\r\n"
-                     "<!DOCTYPE html>\r\n"
-                     "<html>\r\n"
-                     "<head>\r\n"
-                     "<title>Testing Basic HTTP-SERVER</title>\r\n"
-                     "</head>\r\n"
-                     "<body>\r\n"
-                     "I work\r\n"
-                     "</body>\r\n"
-                     "</html>\r\n";
+	struct response r;
+
+	r = initial_landing_response();
 
 	//Write our response to the socket
-	write(params->inbound_socket, response, strlen(response) );
+	write(params->inbound_socket, r.html, strlen(r.html) );
 
 	sleep(15);
 	//Request is handled, close the new socket
