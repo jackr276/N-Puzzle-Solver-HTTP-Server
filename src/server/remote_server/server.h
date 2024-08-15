@@ -47,10 +47,16 @@ struct server_thread_params{
 };
 
 
-	
-//A constructor for our server
+/**
+ * A constructor for a stack allocated server struct
+ */
 struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service, u_int32_t protocol, u_int32_t backlog, u_int64_t interface);
-//A function that serves to start everything up
+
+/**
+ * Runs the server on a separate thread
+ *
+ * THREAD_ENTRY_POINT
+ */
 void run(struct Server* server);
 
 #endif

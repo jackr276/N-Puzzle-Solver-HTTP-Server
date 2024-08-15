@@ -8,3 +8,6 @@
 
 
 
+request_type parse_request(){
+	return R_INITIAL_LANDING;
+}
