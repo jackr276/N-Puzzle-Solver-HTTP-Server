@@ -4,17 +4,17 @@
  */
 
 //TODO need more in here
-enum token{
+typedef enum {
 	L_ANGLE,
 	R_ANGLE
-};
+} token;
 
 
 //TODO need more in here
-enum request_type{
-	R_INITIAL,
+typedef enum {
+	R_INITIAL_LANDING,
 	R_PUZZLE_INITIAL
-};
+} request_type;
 
 
 
