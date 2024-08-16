@@ -8,6 +8,7 @@
 #include "npuzzle/puzzle/puzzle.h"
 #include "remote_server/server.h"
 #include <stdio.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 /**
@@ -49,9 +50,8 @@ int run_command_line(){
  * Run the server side methods to make this a truly "remote" N Puzzle Solver
  */
 int run_server(){
-	struct Server server = create_server(AF_INET, 2025, SOCK_STREAM, 0, 10, INADDR_ANY);
+	struct Server server = create_server(AF_INET, 2021, SOCK_STREAM, 0, 10, INADDR_ANY);
 	run(&server);
-	close(server.socket);
 	return 0;
 }
 

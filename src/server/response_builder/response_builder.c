@@ -30,7 +30,7 @@ struct response initial_landing_response(){
   			 "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\"><br><br>\r\n"
 			 "<label for = \"complexity\">Enter a value for the complexity of the initial configuration:</label>\r\n"
   			 "<input type=\"text\" maxlength = \"3\" id=\"complexity\" name=\"complexity\"><br><br>\r\n"
-		     "<input type=\"submit\" value=\"Solve\">\r\n"
+		     "<input type=\"submit\" value=\"Generate Start Config\">\r\n"
 			 "</form>\r\n"
              "</body>\r\n"
              "</html>\r\n\r\n";

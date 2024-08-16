@@ -11,7 +11,9 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
+int server_socket;
 
 /**
  * Stack allocate a server object with the needed parameters
@@ -37,7 +39,7 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 
 	//If we couldn't initialize, stop everything
 	if(server.socket < 0){
-		printf("ERROR: Socket initializiation failed");
+		printf("ERROR: Socket initializiation failed\n");
 		exit(1);
 	}
 	
@@ -45,7 +47,7 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 
 	//Now attempt to bind the socket to the address. If we can't, hard exit
 	if(bind(server.socket, (struct sockaddr*)(&server.socket_addr), sizeof(server.socket_addr)) < 0){
-		printf("ERROR: Socket failed to bind");
+		printf("ERROR: Socket failed to bind\n");
 		exit(1);
 	}
 
@@ -53,7 +55,7 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
  
 	//Finally attempt to begin listening. If that fails, hard exit
 	if(listen(server.socket, server.backlog) < 0){
-		printf("ERROR: Socket failed to start listening");
+		printf("ERROR: Socket failed to start listening\n");
 		exit(1);
 	}
 
@@ -159,24 +161,43 @@ static void* handle_request(void* server_thread_params){
 
 
 /**
+ * Signal interrupt handler to enable a graceful exit on CTRL-C
+ */
+static void sigint_handler(const int sig_num){
+	//Let the user know what is happening
+	printf("\nServer closing on <CTRL-C>(Signal Interrupt %d)\nAll sockets closing\n", sig_num);
+
+	//Shutdown and close the socket
+	shutdown(server_socket, SHUT_RDWR);
+	close(server_socket);
+
+	//Exit the program with code 0
+	exit(0);
+}
+
+
+/**
  * Run the server that is referenced in the parameter. This method serves as a thread entry point for
  * the concurrent server handling that we have
  */
 void run(struct Server* server){
+	server_socket = server->socket;
+
 	//Grab the ip address
 	unsigned int ip = server->socket_addr.sin_addr.s_addr;
 
 	//Translate our current ip to be human readable
 	char* ip_addr = IPv4_addr_parser(ip);
-
 	//Let the user know that we are listening
-	printf("Server active and waiting for connection at Address %s:%d\n", ip_addr, server->port);
+	printf("Server active and waiting for connection at Address %s:%d\n\n", ip_addr, server->port);
 	//Release this from memory
 	free(ip_addr);
 
+	//Listen for a <CTRL-C> signal and use the handler to perform graceful shutdown
+	signal(SIGINT, sigint_handler);
 
 	//Listen for new connections
-	while(1){
+ 	while(1){
 		//Grab the length of our socket's address
 		int address_length = sizeof(server->socket_addr);
 		//Accept a new connection and create a new connected socket
@@ -192,7 +213,6 @@ void run(struct Server* server){
 
 		//Stack allocate a new thread;
 		pthread_t request_handler;
-
 
 		//Create the thread to handle the request
 		pthread_create(&request_handler, NULL, handle_request, &params);
