@@ -25,6 +25,6 @@ struct request_params {
 
 
 /**
- * Parse an html request message and return what type it is
+ * Parse an html request message and return what request type it is 
  */
 request_type parse_request(char* html_request);
