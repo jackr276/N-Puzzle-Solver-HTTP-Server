@@ -114,6 +114,7 @@ static void* handle_request(void* server_thread_params){
 
 	//Receive data from a connection
 	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
+	parse_request(buffer);
 
 	//For debugging
 	printf("%s\n", buffer);

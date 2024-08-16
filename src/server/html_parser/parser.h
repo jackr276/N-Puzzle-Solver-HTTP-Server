@@ -9,22 +9,23 @@ typedef enum {
 	R_ANGLE
 } token;
 
-
 //TODO need more in here
 typedef enum {
-	R_INITIAL_LANDING,
-	R_PUZZLE_INITIAL
+	R_GET,
+	R_POST,
+	R_PUZZLE_INITIAL,
+	R_PUZZLE_SOLVE,
+	R_ERR
 } request_type;
 
-
-//TODO may need more in here
-struct request_params {
+//Maybe need this but don't know
+struct request_details{
+	request_type type;
 	int N;
 	int complexity;
 };
 
-
 /**
  * Parse an html request message and return what request type it is 
  */
-request_type parse_request(char* html_request);
+struct request_details parse_request(char* html_request);
