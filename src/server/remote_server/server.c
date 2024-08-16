@@ -4,8 +4,6 @@
  */  
 
 #include "server.h"
-#include "../response_builder/response_builder.h"
-#include "../html_parser/parser.h"
 //For multithreading
 #include <netinet/in.h>
 #include <pthread.h>
@@ -111,14 +109,24 @@ static void* handle_request(void* server_thread_params){
 	ssize_t bytes_read;
 	ssize_t bytes_written;
 	struct response r;
+	struct request_details rd;	
 
 	//Receive data from a connection
 	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
-	parse_request(buffer);
+	rd = parse_request(buffer);
 
 	//For debugging
-	printf("%s\n", buffer);
 	printf("Bytes read: %ld\n", bytes_read);
+	switch(rd.type){
+		case R_GET: 
+			printf("Received a GET request\n");
+			break;
+		case R_POST:
+			printf("Received a POST request\n");
+			break;
+		default:
+			break;
+	}
 
 	//If we didn't read anything, we will leave
 	if(bytes_read <= 0){

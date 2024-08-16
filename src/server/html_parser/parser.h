@@ -3,13 +3,10 @@
  * This file contains the prototypes and data structures needed for the html parsing engine
  */
 
-//TODO need more in here
-typedef enum {
-	L_ANGLE,
-	R_ANGLE
-} token;
 
-//TODO need more in here
+/**
+ * The type of HTTP request
+ */
 typedef enum {
 	R_GET,
 	R_POST,
@@ -18,14 +15,20 @@ typedef enum {
 	R_ERR
 } request_type;
 
-//Maybe need this but don't know
+
+/**
+ * All necessary details of a request. 
+ * NOTE: not all requests have values for all fields, it is the caller's responsibility to know 
+ * which field is filled for which request type
+ */
 struct request_details{
 	request_type type;
 	int N;
 	int complexity;
 };
 
+
 /**
  * Parse an html request message and return what request type it is 
  */
-struct request_details parse_request(char* html_request);
+struct request_details parse_request(char* http_request);

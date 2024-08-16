@@ -21,6 +21,8 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 
+#include "../response_builder/response_builder.h"
+#include "../html_parser/parser.h"
 
 /**
  * Define a struct for a server that contains all of the needed information 
