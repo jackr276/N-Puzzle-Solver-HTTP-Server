@@ -5,6 +5,7 @@
 
 #include "server.h"
 #include "../response_builder/response_builder.h"
+#include "../html_parser/parser.h"
 //For multithreading
 #include <netinet/in.h>
 #include <pthread.h>
@@ -65,6 +66,10 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 }
 
 
+/**
+ * Parse and convert a 32 bit IPv4 address into it's dot(.) notation
+ * respresentation
+ */
 static char* IPv4_addr_parser(const unsigned int inet_addr){ 
 	//For our uses in this function only
 	typedef unsigned char BYTE;
@@ -90,6 +95,7 @@ static char* IPv4_addr_parser(const unsigned int inet_addr){
 	return ip_addr;
 }
 
+
 /**
  * Thread worker method: handles each new request on a separate thread. This allows us to potentially have
  * more than one connection active at a time if we'd like
@@ -106,32 +112,29 @@ static void* handle_request(void* server_thread_params){
 	ssize_t bytes_written;
 	struct response r;
 
-	//Reception loop, does not seem to work
-	while(1){ 	
-		//Receive data from a connection
-		bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
+	//Receive data from a connection
+	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
 
-		//For debugging
-		printf("%s\n", buffer);
-		printf("Bytes read: %ld\n", bytes_read);
+	//For debugging
+	printf("%s\n", buffer);
+	printf("Bytes read: %ld\n", bytes_read);
 
-		//If we didn't read anything, we will leave
-		if(bytes_read <= 0){
-			printf("No data received from client\n");
-			break;
-		}
+	//If we didn't read anything, we will leave
+	if(bytes_read <= 0){
+		printf("No data received from client\n");
+		return NULL;
+	}
 
-		//Craft our response
-		r = initial_landing_response();
-	
-		//Send a response
-		bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+	//Craft our response
+	r = initial_landing_response();
 
-		//If the 
-		if(bytes_written == -1){
-			printf("ERROR: Client did not receive sent data. Connection will be closed.");
-			break;
-		}
+	//Send a response
+	bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+
+	//If the client did not get our data, we have an error
+	if(bytes_written == -1){
+		printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
+		return NULL;
 	}
 
 	//Shutdown the socket
@@ -141,7 +144,7 @@ static void* handle_request(void* server_thread_params){
 	close(params->inbound_socket);
 
 	//Exit the threads
-	printf("Client disconnected successfully.\n");
+	printf("Request handled successfully.\n");
 	pthread_exit(NULL);
 }
 

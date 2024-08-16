@@ -7,7 +7,6 @@
 #include "parser.h"
 
 
-
-request_type parse_request(){
+request_type parse_request(char* html_request){
 	return R_INITIAL_LANDING;
 }

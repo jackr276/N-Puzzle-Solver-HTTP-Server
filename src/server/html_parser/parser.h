@@ -17,5 +17,14 @@ typedef enum {
 } request_type;
 
 
+//TODO may need more in here
+struct request_params {
+	int N;
+	int complexity;
+};
 
-request_type parse_request();
+
+/**
+ * Parse an html request message and return what type it is
+ */
+request_type parse_request(char* html_request);
