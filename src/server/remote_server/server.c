@@ -126,6 +126,7 @@ static void* handle_request(void* server_thread_params){
 			break;
 		case R_POST:
 			printf("Received a POST request\n");
+			printf("N: %d Complexity %d: \n", rd.N, rd.complexity);
 			break;
 		default:
 			break;
