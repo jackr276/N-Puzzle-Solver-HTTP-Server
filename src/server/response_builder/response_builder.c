@@ -10,6 +10,17 @@
 
 
 /**
+ * Perform any needed teardowns on the heap allocated components of the response, namely
+ * the response that is malloced
+ * 
+ * May not need this but it could be nice
+ */
+void teardown_response(struct response r){
+	free(r.html);
+}
+
+
+/**
  * Construct the HTML necessary for the grid display that we need on the screen
  */
 static char* construct_grid_display(const int N, struct state* state_ptr){
@@ -21,7 +32,6 @@ static char* construct_grid_display(const int N, struct state* state_ptr){
 
 	return grid_display;
 }
-
 
 
 /**
@@ -43,30 +53,33 @@ struct response initial_landing_response(){
              				   "<html>\r\n"
              				   "<head>\r\n"
              				   "<title>N Puzzle Solver</title>\r\n"
-             "</head>\r\n"
-             "<body>\r\n"
-			 "<h1>N Puzzle Solver</h1>\r\n"
-			 "<form method=\"POST\">\r\n"
-  			 "<label for = \"N\">Enter a value for N:</label>\r\n"
-  			 "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\"><br><br>\r\n"
-			 "<label for = \"complexity\">Enter a value for the complexity of the initial configuration:</label>\r\n"
-  			 "<input type=\"text\" maxlength = \"3\" id=\"CMP\" name=\"complexity\"><br><br>\r\n"
-		     "<input type=\"submit\" value=\"Generate Start Config\">\r\n"
-			 "</form>\r\n"
-             "</body>\r\n"
-             "</html>\r\n\r\n");
+             				   "</head>\r\n"
+  				               "<body>\r\n"
+						       "<h1>N Puzzle Solver</h1>\r\n"
+						       "<form method=\"POST\">\r\n"
+  			 				   "<label for = \"N\">Enter a value for N:</label>\r\n"
+  			 			       "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\"><br><br>\r\n"
+			 				   "<label for = \"complexity\">Enter a value for the complexity of the initial configuration:</label>\r\n"
+  							   "<input type=\"text\" maxlength = \"3\" id=\"CMP\" name=\"complexity\"><br><br>\r\n"
+							   "<input type=\"submit\" value=\"Generate Start Config\">\r\n"
+			 				   "</form>\r\n"
+             				   "</body>\r\n"
+        					   "</html>\r\n\r\n");
 
 	//Save the type in here for later
 	r.type = RSP_INITIAL;
 
+	//Give the response back
 	return r;
 }
 
 
+/**
+ * Construct the initial response that displays for the user the grid after they've entered in N, etc.
+ */
 struct response initial_config_response(const int N, struct state* state_ptr){ 
 	//Stack allocate our response
 	struct response r;
-
 
 	return r;
 }

@@ -156,6 +156,8 @@ static void* handle_request(void* server_thread_params){
 	//Request is handled, close the new socket
 	close(params->inbound_socket);
 
+	//Free up our response
+	teardown_response(r);
 	//Exit the threads
 	printf("Request handled successfully.\n");
 	pthread_exit(NULL);
