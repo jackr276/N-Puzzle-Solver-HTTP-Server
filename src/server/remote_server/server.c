@@ -119,6 +119,7 @@ static void* handle_request(void* server_thread_params){
 
 	//For debugging
 	printf("Bytes read: %ld\n", bytes_read);
+	printf("%s\n", buffer);
 	switch(rd.type){
 		case R_GET: 
 			printf("Received a GET request\n");
