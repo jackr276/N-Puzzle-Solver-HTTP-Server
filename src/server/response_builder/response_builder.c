@@ -110,5 +110,34 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 	//Stack allocate our response
 	struct response r;
 
+	//Generate the grid for our initial response here
+	r.grid = construct_grid_display(N, state_ptr);
+
+	//Allocate the space that we need for our html
+	r.html = (char*)malloc(RESPONSE_SIZE);
+
+
+	//Populate the initial HTML
+	sprintf(r.html, "HTTP/1.1 200 OK\r\n"
+			 				   "Connection: keep-alive\r\n"
+             				   "Content-Type: text/html; charset=UTF-8\r\n"
+			 				   "Keep-Alive: timeout=15, max=1000\r\n\r\n"
+           				 	   "<!DOCTYPE html>\r\n"
+             				   "<html>\r\n"
+             				   "<head>\r\n"
+             				   "<title>N Puzzle Solver</title>\r\n"
+             				   "</head>\r\n"
+  				               "<body>\r\n"
+						       "<h1>N Puzzle Solver</h1>\r\n");
+	
+	//Add our grid in
+	strcat(r.html, r.grid);
+	
+	//TODO may add a "submit button here"
+	
+	//Close the entire thing up
+	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
+	
+	//return the response
 	return r;
 }
