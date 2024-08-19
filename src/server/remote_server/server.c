@@ -112,6 +112,9 @@ static void* handle_request(void* server_thread_params){
 	ssize_t bytes_written;
 	struct response r;
 	struct request_details rd;	
+	//For our initial and goal configs
+	struct state* initial;
+	struct state* goal;
 
 	//Receive data from a connection
 	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
@@ -161,13 +164,25 @@ static void* handle_request(void* server_thread_params){
 			printf("N: %d Complexity: %d \n", rd.N, rd.complexity);
 
 			//Generate the initial starting config
-			struct state* initial = generate_start_config(rd.complexity, rd.N);
+			initial = generate_start_config(rd.complexity, rd.N);
 
+			//Generate the config response
+			r = initial_config_response(rd.N, initial);
+
+			//Send a response
+			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+
+			//If the client did not get our data, we have an error
+			if(bytes_written == -1){
+				printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
+				return NULL;
+			}
 
 			break;
 		default:
 			break;
 	}
+
 	//Shutdown the socket
 	shutdown(params->inbound_socket, SHUT_RDWR);
 
@@ -176,7 +191,8 @@ static void* handle_request(void* server_thread_params){
 
 	//Free up our response
 	teardown_response(r);
-	//Exit the threads
+
+	//Exit the thread
 	printf("Request handled successfully.\n");
 	pthread_exit(NULL);
 }

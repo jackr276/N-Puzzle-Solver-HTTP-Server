@@ -7,6 +7,7 @@
 #include "response_builder.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /**
@@ -30,13 +31,31 @@ void teardown_response(struct response r){
  * Construct the HTML necessary for the grid display that we need on the screen
  */
 static char* construct_grid_display(const int N, struct state* state_ptr){
-	char* grid_display = (char*)malloc(2000);
+	//We need a pointer to a grid display
+	char* grid_display = (char*)malloc(5000);
 
+	char* grid_item = (char*)malloc(50);
 
 	//First print in the start of the grid
-	sprintf(grid_display, "<div class = \"wrapper\">");
+	sprintf(grid_display, "<div class = \"grid_container\">\r\n");
 
+	for(int i = 0; i < N*N; i++){
+		//Wipe the grid item string
+		memset(grid_item, 0, 50);
+		//Print the div item into it
+		sprintf(grid_item, "<div class=\"grid_item\">%d</div>\r\n", state_ptr->tiles[i]);
 
+		//Concatenate the new grid item onto the grid string
+		strcat(grid_display, grid_item); 
+	}
+
+	//Attach the closing tag for the wrapper
+	strcat(grid_display, "</div>\r\n");
+
+	//Once we're done, get rid of this memory
+	free(grid_item);
+
+	//Return the pointer to our grid display
 	return grid_display;
 }
 
@@ -93,6 +112,3 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 
 	return r;
 }
-
-
-
