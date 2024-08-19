@@ -4,9 +4,9 @@
  */
 
 //Hook into our and the npuzzle
-#include "npuzzle/solver/solve.h"
-#include "npuzzle/puzzle/puzzle.h"
-#include "remote_server/server.h"
+#include "server/npuzzle/solver/solve.h"
+#include "server/npuzzle/puzzle/puzzle.h"
+#include "server/remote_server/server.h"
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
