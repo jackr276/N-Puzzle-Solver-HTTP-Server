@@ -115,41 +115,59 @@ static void* handle_request(void* server_thread_params){
 
 	//Receive data from a connection
 	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
+	
+	//If we didn't read anything, we will close the socket and leave
+	if(bytes_read <= 0){
+		printf("No data received from client\n");
+
+		//Shutdown the socket
+		shutdown(params->inbound_socket, SHUT_RDWR);
+
+		//Request is handled, close the new socket
+		close(params->inbound_socket);	
+
+		return NULL;
+	}
+
+	//If we get here, we know that we got a response that needs to be parsed
 	rd = parse_request(buffer);
 
 	//For debugging
-	printf("Bytes read: %ld\n", bytes_read);
-	printf("%s\n", buffer);
+	//printf("Bytes read: %ld\n", bytes_read);
+	//printf("%s\n", buffer);
+
+	//What kind of request that we have determines the response
 	switch(rd.type){
+		//If we receive a GET request, that means that the user wants to see the landing page
 		case R_GET: 
 			printf("Received a GET request\n");
+			//Craft our response
+			r = initial_landing_response();
+
+			//Send a response
+			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+
+			//If the client did not get our data, we have an error
+			if(bytes_written == -1){
+				printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
+				return NULL;
+			}
+
 			break;
+
+		//A post request means that we want to solve the entire puzzle
 		case R_POST:
 			printf("Received a POST request\n");
-			printf("N: %d Complexity %d: \n", rd.N, rd.complexity);
+			printf("N: %d Complexity: %d \n", rd.N, rd.complexity);
+
+			//Generate the initial starting config
+			struct state* initial = generate_start_config(rd.complexity, rd.N);
+
+
 			break;
 		default:
 			break;
 	}
-
-	//If we didn't read anything, we will leave
-	if(bytes_read <= 0){
-		printf("No data received from client\n");
-		return NULL;
-	}
-
-	//Craft our response
-	r = initial_landing_response();
-
-	//Send a response
-	bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
-
-	//If the client did not get our data, we have an error
-	if(bytes_written == -1){
-		printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
-		return NULL;
-	}
-
 	//Shutdown the socket
 	shutdown(params->inbound_socket, SHUT_RDWR);
 

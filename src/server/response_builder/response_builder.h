@@ -17,7 +17,7 @@
 typedef enum {
 	RSP_INITIAL,
 	RSP_INITIAL_CONF,
-	//TODO we definitely need more in here
+	RSP_SOLUTION,
 
 } response_type;
 
@@ -27,6 +27,7 @@ typedef enum {
 struct response{
 	//The response mainly contains the HTML code that we want to serve up
 	char* html;
+	char* grid;
 	response_type type;
 };
 

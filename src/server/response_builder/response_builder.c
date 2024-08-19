@@ -16,7 +16,13 @@
  * May not need this but it could be nice
  */
 void teardown_response(struct response r){
+	//Free the html
 	free(r.html);
+
+	//If we have a grid, free that too
+	if(r.grid != NULL){
+		free(r.grid);
+	}
 }
 
 
@@ -25,6 +31,7 @@ void teardown_response(struct response r){
  */
 static char* construct_grid_display(const int N, struct state* state_ptr){
 	char* grid_display = (char*)malloc(2000);
+
 
 	//First print in the start of the grid
 	sprintf(grid_display, "<div class = \"wrapper\">");
@@ -40,6 +47,9 @@ static char* construct_grid_display(const int N, struct state* state_ptr){
 struct response initial_landing_response(){
 	//Stack allocate our response
 	struct response r;
+
+	//Save the type in here for later
+	r.type = RSP_INITIAL;
 
 	//Allocate the space that we need for our initial html
 	r.html = (char*)malloc(RESPONSE_SIZE);
@@ -66,8 +76,8 @@ struct response initial_landing_response(){
              				   "</body>\r\n"
         					   "</html>\r\n\r\n");
 
-	//Save the type in here for later
-	r.type = RSP_INITIAL;
+	//We don't have a grid here, so set it to null to alert the freer method
+	r.grid = NULL;
 
 	//Give the response back
 	return r;
