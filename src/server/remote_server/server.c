@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <netdb.h>
 
 int server_socket;
 
@@ -59,7 +60,7 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		exit(1);
 	}
 
-	printf("Socket Listening\n");
+	printf("Socket Listening\n\n");
 
 	//Return our stack allocated server
 	return server;
@@ -90,7 +91,7 @@ static char* IPv4_addr_parser(const unsigned int inet_addr){
 	BYTE fourth = inet_addr & 0xFF;
 
 	//Print to the string
-	sprintf(ip_addr, "%u.%u.%u.%u", first, second, third, fourth);
+	sprintf(ip_addr, "%u.%u.%u.%u", fourth, third, second, first);
 
 	return ip_addr;
 }
@@ -165,6 +166,9 @@ static void* handle_request(void* server_thread_params){
 
 			//Generate the initial starting config
 			initial = generate_start_config(rd.complexity, rd.N);
+			//Generate the goal config too
+			goal = initialize_goal(rd.N);
+
 
 			//Generate the config response
 			r = initial_config_response(rd.N, initial);
@@ -215,21 +219,62 @@ static void sigint_handler(const int sig_num){
 
 
 /**
+ * A simple function that prints out our hostname and address
+ */
+void print_initial_message(struct Server* server){
+
+	//Declare a buffer for the hostname
+	char host_name[256];
+
+	//Grab the hostname and store it into the host buffer
+	if(gethostname(host_name, 256) == -1){
+		//We really should never end up here
+		printf("ERROR: Your computer appears to have no hostname. Server functionality is therefore impossible\n");
+		exit(1);
+	}
+
+	//Pointer to our host entry
+	struct hostent* host_entry;
+
+	//Grab the ip addresses of the host
+	if((host_entry = gethostbyname(host_name)) == NULL){
+		//We also really shouldn't end up here
+		printf("ERROR: There appears to be no IP addresses associated with your computers hostname. Server functionality is therefore impossible\n");
+		exit(1);
+	}	
+
+	//Grab the list of addresses
+	struct in_addr** address_list = (struct in_addr**)host_entry->h_addr_list;
+	char* ip_addr;
+
+	//Go through these addresses until we find the non null one	
+	for(int i = 0; address_list[i] != NULL; i++){
+		ip_addr = IPv4_addr_parser(address_list[i]->s_addr);	
+	}
+
+	printf("=============================================================================\n");
+	//Let the user know that we are good to go
+	printf("Server active on host machine: %s\n", host_name);
+	printf("Waiting for inbound connections at address http://%s:%d\n", ip_addr, server->port);
+	printf("=============================================================================\n\n");
+	//For some reason we wouldn't get a display unless we flush to stdout
+	fflush(stdout);
+
+	//Release this from memory
+	free(ip_addr);
+}
+
+
+/**
  * Run the server that is referenced in the parameter. This method serves as a thread entry point for
  * the concurrent server handling that we have
  */
 void run(struct Server* server){
+	//Assign the server socket global variable for our shutdown
 	server_socket = server->socket;
 
-	//Grab the ip address
-	unsigned int ip = server->socket_addr.sin_addr.s_addr;
-
-	//Translate our current ip to be human readable
-	char* ip_addr = IPv4_addr_parser(ip);
-	//Let the user know that we are listening
-	printf("Server active and waiting for connection at Address %s:%d\n\n", ip_addr, server->port);
-	//Release this from memory
-	free(ip_addr);
+	//Display the initial message for our user
+	print_initial_message(server);
 
 	//Listen for a <CTRL-C> signal and use the handler to perform graceful shutdown
 	signal(SIGINT, sigint_handler);
