@@ -28,6 +28,7 @@ struct response{
 	//The response mainly contains the HTML code that we want to serve up
 	char* html;
 	char* grid;
+	char* style;
 	response_type type;
 };
 

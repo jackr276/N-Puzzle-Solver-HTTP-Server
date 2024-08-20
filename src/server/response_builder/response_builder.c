@@ -24,6 +24,11 @@ void teardown_response(struct response r){
 	if(r.grid != NULL){
 		free(r.grid);
 	}
+
+	//If we have CSS, free that as well
+	if(r.style != NULL){
+		free(r.style);
+	}
 }
 
 
@@ -60,8 +65,37 @@ static char* construct_grid_display(const int N, struct state* state_ptr){
 }
 
 
-static char* css_builder(const int N){
+/**
+ * A function that will construct the necessary CSS to make our N puzzle show 
+ * up as a grid
+ */
+static char* css_grid_builder(const int N){
+	//Reserver space for the css
+	char* style = (char*)malloc(1000);
 
+	//Add the initial style in
+	sprintf(style, "<style>\r\n"
+				   			".grid_container {display: grid; grid-template-columns: ");
+             				   
+	//We need to adaptively add in the "auto" keyword N times to have an appopriate number of columns
+	for(int i = 0; i < N; i++){
+		strcat(style, "auto ");	
+	}
+
+	//Now we can close up the grid container style
+	strcat(style, ";}\r\n");
+
+	//Add in the style for our grid elements
+	strcat(style, ".grid_item{"
+							 "border: 1px solid rgba(0, 0, 0, 0.8);"
+							 "text-align: center;"
+							 "}\r\n");
+
+	//Close the style up
+	strcat(style, "</style>\r\n");
+
+	//Return the string
+	return style;
 }
 
 
@@ -102,6 +136,8 @@ struct response initial_landing_response(){
 
 	//We don't have a grid here, so set it to null to alert the freer method
 	r.grid = NULL;
+	//We also don't have CSS, so set it to be null to alert the freer method
+	r.style = NULL;
 
 	//Give the response back
 	return r;
@@ -129,11 +165,15 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 			 				   "Keep-Alive: timeout=15, max=1000\r\n\r\n"
            				 	   "<!DOCTYPE html>\r\n"
              				   "<html>\r\n"
-             				   "<head>\r\n"
-							   "<style>\r\n"
-							   ".grid_container {display: grid; grid-template-columns: auto auto auto;}\r\n"
-							   "</style>\r\n"
-             				   "<title>N Puzzle Solver</title>\r\n"
+             				   "<head>\r\n");
+
+	 r.style = css_grid_builder(N);
+
+	//Add in all needed css
+	strcat(r.html, r.style);
+
+	//Add the remainder in here
+	strcat(r.html,  "<title>N Puzzle Solver</title>\r\n"
              				   "</head>\r\n"
   				               "<body>\r\n"
 						       "<h1>N Puzzle Solver</h1>\r\n");
