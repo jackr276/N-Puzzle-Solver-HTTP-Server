@@ -25,6 +25,7 @@
 #include "../response_builder/response_builder.h"
 #include "../html_parser/parser.h"
 #include "../npuzzle/puzzle/puzzle.h"
+#include "../npuzzle//solver//solve.h"
 
 /**
  * Define a struct for a server that contains all of the needed information 

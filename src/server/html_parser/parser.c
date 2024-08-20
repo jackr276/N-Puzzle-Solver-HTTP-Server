@@ -233,7 +233,6 @@ struct request_details parse_request(char* http_request){
 					return details;
 				}
 
-
 				//Grab the third number, if there is one
 				if((ch = get_next_char(http_request, &current_ptr)) != '\0'){
 					if(ch - '0' < 0 || ch - '9' > 9){

@@ -114,7 +114,7 @@ struct response initial_landing_response(){
 	r.html = (char*)malloc(RESPONSE_SIZE);
 
 	//Populate the initial HTML
-	sprintf(r.html, "HTTP/1.1 200 OK\r\n"
+	sprintf(r.html, "HTTP/2.0 200 OK\r\n"
 			 				   "Connection: keep-alive\r\n"
              				   "Content-Type: text/html; charset=UTF-8\r\n"
 			 				   "Keep-Alive: timeout=15, max=1000\r\n\r\n"
@@ -160,7 +160,7 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 
 
 	//Populate the initial HTML
-	sprintf(r.html, "HTTP/1.1 200 OK\r\n"
+	sprintf(r.html, "HTTP/2.0 200 OK\r\n"
 			 				   "Connection: keep-alive\r\n"
              				   "Content-Type: text/html; charset=UTF-8\r\n"
 			 				   "Keep-Alive: timeout=15, max=1000\r\n\r\n"

@@ -14,7 +14,9 @@
 #include <unistd.h>
 #include <netdb.h>
 
+//Global variable that holds our socket here
 int server_socket;
+
 
 /**
  * Stack allocate a server object with the needed parameters
@@ -44,7 +46,8 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		exit(1);
 	}
 	
-	printf("Socket Initialized\n");
+	//Debug statement
+	//printf("Socket Initialized\n");
 
 	//Now attempt to bind the socket to the address. If we can't, hard exit
 	if(bind(server.socket, (struct sockaddr*)(&server.socket_addr), sizeof(server.socket_addr)) < 0){
@@ -52,7 +55,7 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		exit(1);
 	}
 
-	printf("Socket Bound\n");
+	//printf("Socket Bound\n");
  
 	//Finally attempt to begin listening. If that fails, hard exit
 	if(listen(server.socket, server.backlog) < 0){
@@ -60,7 +63,7 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		exit(1);
 	}
 
-	printf("Socket Listening\n\n");
+	//printf("Socket Listening\n\n");
 
 	//Return our stack allocated server
 	return server;
@@ -170,6 +173,9 @@ static void* handle_request(void* server_thread_params){
 			//Generate the goal config too
 			goal = initialize_goal(rd.N);
 
+			//Store N for later
+			const int N = rd.N;
+
 			//Generate the config response
 			r = initial_config_response(rd.N, initial);
 
@@ -182,7 +188,17 @@ static void* handle_request(void* server_thread_params){
 				return NULL;
 			}
 
+
+			
+			solve(N, initial, goal, 1);
+			sleep(2);
+			r = initial_landing_response();
+			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+
+
 			break;
+			
+		//A default break otherwise
 		default:
 			break;
 	}
