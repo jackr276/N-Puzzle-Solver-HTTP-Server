@@ -55,7 +55,7 @@ static char* construct_grid_display(const int N, struct state* state_ptr){
 	}
 
 	//Attach the closing tag for the wrapper
-	strcat(grid_display, "</div>\r\n");
+	strcat(grid_display, "</div><br><br>\r\n");
 
 	//Once we're done, get rid of this memory
 	free(grid_item);
@@ -77,9 +77,9 @@ static char* css_grid_builder(const int N){
 	sprintf(style, "<style>\r\n"
 				   			".grid_container {display: grid; grid-template-columns: ");
              				   
-	//We need to adaptively add in the "auto" keyword N times to have an appopriate number of columns
+	//We need to adaptively add in the size in pixels each time keyword N times to have an appopriate number of columns
 	for(int i = 0; i < N; i++){
-		strcat(style, "auto ");	
+		strcat(style, "40px ");	
 	}
 
 	//Now we can close up the grid container style
@@ -87,7 +87,8 @@ static char* css_grid_builder(const int N){
 
 	//Add in the style for our grid elements
 	strcat(style, ".grid_item{"
-							 "border: 1px solid rgba(0, 0, 0, 0.8);"
+							 "border: 2px solid rgba(0, 0, 0, 0.8);"
+							 "font-size: 30px;"
 							 "text-align: center;"
 							 "}\r\n");
 
