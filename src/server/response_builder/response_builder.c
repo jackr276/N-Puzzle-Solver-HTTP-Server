@@ -60,6 +60,11 @@ static char* construct_grid_display(const int N, struct state* state_ptr){
 }
 
 
+static char* css_builder(const int N){
+
+}
+
+
 /**
  * Construct the response that the user initially gets on the landing page
  */
@@ -87,9 +92,9 @@ struct response initial_landing_response(){
 						       "<h1>N Puzzle Solver</h1>\r\n"
 						       "<form method=\"POST\">\r\n"
   			 				   "<label for = \"N\">Enter a value for N:</label>\r\n"
-  			 			       "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\"><br><br>\r\n"
+  			 			       "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\" placeholder=\"N\"><br><br>\r\n"
 			 				   "<label for = \"complexity\">Enter a value for the complexity of the initial configuration:</label>\r\n"
-  							   "<input type=\"text\" maxlength = \"3\" id=\"CMP\" name=\"complexity\"><br><br>\r\n"
+  							   "<input type=\"text\" maxlength = \"3\" id=\"CMP\" name=\"complexity\" placeholder=\"Complexity\"><br><br>\r\n"
 							   "<input type=\"submit\" value=\"Generate Start Config\">\r\n"
 			 				   "</form>\r\n"
              				   "</body>\r\n"
@@ -125,6 +130,9 @@ struct response initial_config_response(const int N, struct state* state_ptr){
            				 	   "<!DOCTYPE html>\r\n"
              				   "<html>\r\n"
              				   "<head>\r\n"
+							   "<style>\r\n"
+							   ".grid_container {display: grid; grid-template-columns: auto auto auto;}\r\n"
+							   "</style>\r\n"
              				   "<title>N Puzzle Solver</title>\r\n"
              				   "</head>\r\n"
   				               "<body>\r\n"
@@ -133,7 +141,11 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 	//Add our grid in
 	strcat(r.html, r.grid);
 	
-	//TODO may add a "submit button here"
+	//Add a solve button in here
+	strcat(r.html, "<form method=\"POST\">\r\n"
+							  "<input type=\"submit\" value=\"Solve\">\r\n"
+							  "</form>\r\n");
+
 	
 	//Close the entire thing up
 	strcat(r.html, "</body>\r\n</html>\r\n\r\n");

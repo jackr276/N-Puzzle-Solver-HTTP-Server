@@ -121,7 +121,7 @@ static void* handle_request(void* server_thread_params){
 	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
 	
 	//If we didn't read anything, we will close the socket and leave
-	if(bytes_read <= 0){
+	if(bytes_read < 0){
 		printf("No data received from client\n");
 
 		//Shutdown the socket
@@ -133,6 +133,7 @@ static void* handle_request(void* server_thread_params){
 		return NULL;
 	}
 
+	printf("%s\n", buffer);
 	//If we get here, we know that we got a response that needs to be parsed
 	rd = parse_request(buffer);
 
@@ -168,7 +169,6 @@ static void* handle_request(void* server_thread_params){
 			initial = generate_start_config(rd.complexity, rd.N);
 			//Generate the goal config too
 			goal = initialize_goal(rd.N);
-
 
 			//Generate the config response
 			r = initial_config_response(rd.N, initial);
