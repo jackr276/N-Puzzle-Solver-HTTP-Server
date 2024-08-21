@@ -161,7 +161,7 @@ void print_solution_path(struct state* solution_path, const int N, int pathlen, 
  * is successful, it will print the resulting solution path to the console as well.  
  * For mode: 0 equals web client solve, 1 equals debug(CLI) mode
  */
-int solve(int N, struct state* start_state, struct state* goal_state, int solver_mode){
+struct state* solve(int N, struct state* start_state, struct state* goal_state, int solver_mode){
 	//If we are in debug mode, we will start off by printing to the console
 	if(solver_mode == 1){
 		printf("\nInitial State:\n");
@@ -227,7 +227,7 @@ int solve(int N, struct state* start_state, struct state* goal_state, int solver
 			}
 
 			//We've found a solution, so the function should exit 
-			return 0;	
+			return solution_path;	
 		}
 		
 		/**
@@ -248,7 +248,7 @@ int solve(int N, struct state* start_state, struct state* goal_state, int solver
 		merge_to_closed(curr_state);	
 
 		//For very complex problems, print the iteration count to the console for a sanity check
-		if(iteration > 1 && iteration % 1000 == 0) {
+		if(solver_mode == 1 && iteration > 1 && iteration % 1000 == 0) {
 			printf("Iteration: %6d, %6d total unique states generated\n", iteration, num_unique_configs);
 		}
 		
@@ -258,5 +258,5 @@ int solve(int N, struct state* start_state, struct state* goal_state, int solver
 	
 	//If we end up here, fringe became NULL with no goal configuration found, so there is no solution
 	printf("No solution.\n");
-	return 0;
+	return NULL;
 }

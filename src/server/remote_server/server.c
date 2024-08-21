@@ -188,11 +188,15 @@ static void* handle_request(void* server_thread_params){
 				return NULL;
 			}
 
+			//Free up the resonse
+			teardown_response(r);
 
-			
-			solve(N, initial, goal, 1);
-			sleep(2);
-			r = initial_landing_response();
+			//Attempt to solve the puzzle
+			struct state* solution_path = solve(N, initial, goal, 0);
+				
+			//Construct the solution path
+			r = solution_response(N, solution_path);
+			//Send the final response
 			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
 
 

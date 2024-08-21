@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 
 /**
@@ -168,7 +169,8 @@ struct response initial_config_response(const int N, struct state* state_ptr){
              				   "<html>\r\n"
              				   "<head>\r\n");
 
-	 r.style = css_grid_builder(N);
+	//Create our styles
+	r.style = css_grid_builder(N);
 
 	//Add in all needed css
 	strcat(r.html, r.style);
@@ -182,12 +184,47 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 	//Add our grid in
 	strcat(r.html, r.grid);
 		
-	//Close the entire thing up
-	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
-	
 	//return the response
 	return r;
 }
 
 
-struct response solution_response(const int N, struct state* solution);
+struct response solution_response(const int N, struct state* solution_path){
+	//Stack allocated response
+	struct response r;
+	
+	//Get some space for our response
+	r.html = (char*)malloc(RESPONSE_SIZE);
+
+	//Add in the initial headings
+	sprintf(r.html, "<h2>Solution Found!</h2><br>\r\n"
+							   "<h2>Solution Path</h2><br>\r\n");	
+
+	r.grid = NULL;
+
+	//Define a cursor to traverse our linked list
+	struct state* cursor = solution_path;
+	
+	//Traverse the solution path
+	while(cursor != NULL){
+		//If we have a previous grid, we need to free it or else we'll leak
+		if(r.grid != NULL){
+			free(r.grid);
+		}
+		//Remake the new grid 
+		r.grid = construct_grid_display(N,cursor);
+
+		//Add the grid into our response
+		strcat(r.html, r.grid);
+
+		//Advance the linked list
+		cursor = cursor->next;
+	}
+
+	//Close the entire thing up
+	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
+	
+
+	//Give the response back
+	return r;
+}

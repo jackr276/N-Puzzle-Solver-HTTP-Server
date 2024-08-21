@@ -43,7 +43,8 @@ int run_command_line(){
 	struct state* goal = initialize_goal(N);
 
 	//Simply make a call to solve and let it go from there
-	return solve(N, initial, goal, 1);
+	solve(N, initial, goal, 1);
+	return 0;
 }
 
 
