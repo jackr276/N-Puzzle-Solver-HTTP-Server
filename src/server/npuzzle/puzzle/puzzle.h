@@ -8,6 +8,8 @@
 #ifndef PUZZLE_H
 #define PUZZLE_H
 
+#define ARRAY_START_SIZE 5000
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

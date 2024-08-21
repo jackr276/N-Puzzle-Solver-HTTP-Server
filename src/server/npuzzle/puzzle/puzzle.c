@@ -6,7 +6,7 @@
 
 //Link to puzzle.h
 #include "puzzle.h"
-#include <stdlib.h>
+
 
 
 /*================================= Global variables for convenience =========================== */
@@ -15,11 +15,11 @@ struct state** fringe;
 //Closed is an array containing all sets previously examined. This is used to avoid repeating
 struct state** closed;
 //Define an initial starting size of 5000 for fringe and closed
-int closed_max_size = 5000;
-int fringe_max_size = 5000;
+int closed_max_size;
+int fringe_max_size;
 //We will keep a reference to the next available closed and fringe indices
-int next_closed_index = 0;
-int next_fringe_index = 0;
+int next_closed_index;
+int next_fringe_index;
 /*============================================================================================== */
 
 
@@ -364,7 +364,9 @@ struct state* initialize_goal(const int N){
  * A simple helper function that allocates memory for fringe
  */
 void initialize_fringe(){
+	fringe_max_size = ARRAY_START_SIZE;
 	fringe = (struct state**)malloc(sizeof(struct state*) * fringe_max_size);
+	next_fringe_index = 0;
 }
 
 
@@ -372,7 +374,9 @@ void initialize_fringe(){
  * A simple helper function that allocates memory for closed
  */
 void initialize_closed(){
+	closed_max_size = ARRAY_START_SIZE;
 	closed = (struct state**)malloc(sizeof(struct state*) * closed_max_size);
+	next_closed_index = 0;
 }
 
 

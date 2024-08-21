@@ -223,7 +223,6 @@ struct response solution_response(const int N, struct state* solution_path){
 
 	//Close the entire thing up
 	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
-	
 
 	//Give the response back
 	return r;

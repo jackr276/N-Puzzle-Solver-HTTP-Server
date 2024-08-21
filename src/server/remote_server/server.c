@@ -194,9 +194,13 @@ static void* handle_request(void* server_thread_params){
 
 			//Attempt to solve the puzzle
 			struct state* solution_path = solve(N, initial, goal, 0);
-				
+
 			//Construct the solution path
 			r = solution_response(N, solution_path);
+	
+			//Cleanup the solution path once we're done with it
+			cleanup_solution_path(solution_path);
+
 			//Send the final response
 			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
 
