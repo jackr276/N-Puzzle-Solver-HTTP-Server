@@ -34,6 +34,7 @@ struct state {
 /* Method Protoypes */
 void initialize_state(struct state*, const int);
 void destroy_state(struct state*);
+void cleanup_fringe_closed(struct state*, const int);
 void print_state(struct state*, const int, int);
 void copy_state(struct state*, struct state*, const int);
 void move_down(struct state*, const int);

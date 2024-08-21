@@ -221,6 +221,9 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 				pathlen++;
 			}
 
+			//Cleanup the fringe and closed arrays
+			cleanup_fringe_closed(solution_path, N);
+
 			//If we are in debug mode, print this path to the console
 			if(solver_mode == 1){
 				print_solution_path(solution_path, N, pathlen, num_unique_configs, time_spent_CPU);
@@ -258,5 +261,8 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 	
 	//If we end up here, fringe became NULL with no goal configuration found, so there is no solution
 	printf("No solution.\n");
+
+	//Cleanup the fringe and closed arrays
+	cleanup_fringe_closed(NULL, N);
 	return NULL;
 }

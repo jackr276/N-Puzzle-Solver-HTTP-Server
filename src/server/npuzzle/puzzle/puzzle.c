@@ -655,3 +655,60 @@ int merge_to_fringe(struct state* successors[4]){
 	//Return how many valid successors that we had
 	return valid_successors;
 }
+
+
+/**
+ * A helper function to tell us if state_ptr is in the solution path linked list
+ */
+static int in_solution_path(struct state* state_ptr, struct state* solution_path, const int N){
+	//If the solution is null, it can't contain it so return false
+	if(solution_path == NULL){
+		return 0;
+	}
+
+	//Maintain a cursor
+	struct state* cursor = solution_path;
+
+	//Iterate over our linked list
+	while(cursor != NULL){
+		//If we have a match, return 1
+		if(states_same(state_ptr, cursor, N) == 1){
+			return 1;
+		}
+
+		//Advance the cursor
+		cursor = cursor->next;
+	}
+	
+	//If we get here, we didn't find it
+	return 0;
+}
+
+
+/**
+ * Cleanup the fringe and closed lists when we're done
+ */
+void cleanup_fringe_closed(struct state* solution_path, const int N){
+	//cleanup fringe
+	for(int i = 0; i < next_fringe_index; i++){
+		destroy_state(fringe[i]);
+	}
+
+	//Free the fringe array
+	free(fringe);
+
+	//cleanup closed
+	for(int i = 0; i < next_closed_index; i++){
+		//NOTE: some of the stuff is fringe is in our solution path,
+		//for obvious reasons, if we destroy those states we will have issues
+		//so we must check here
+		if(in_solution_path(closed[i], solution_path, N) == 0){
+			destroy_state(closed[i]);
+		}
+	}
+
+	//Free the array of pointers
+	free(closed);
+}
+
+
