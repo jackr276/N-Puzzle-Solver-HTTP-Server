@@ -116,9 +116,6 @@ static void* handle_request(void* server_thread_params){
 	ssize_t bytes_written;
 	struct response r;
 	struct request_details rd;	
-	//For our initial and goal configs
-	struct state* initial;
-	struct state* goal;
 
 	//Receive data from a connection
 	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
@@ -167,6 +164,10 @@ static void* handle_request(void* server_thread_params){
 		case R_POST:
 			printf("Received a POST request\n");
 			printf("N: %d Complexity: %d \n", rd.N, rd.complexity);
+		
+			//For our initial and goal configs
+			struct state* initial;
+			struct state* goal;
 
 			//Generate the initial starting config
 			initial = generate_start_config(rd.complexity, rd.N);
@@ -198,7 +199,6 @@ static void* handle_request(void* server_thread_params){
 			r = solution_response(N, solution_path);
 			//Send the final response
 			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
-
 
 			break;
 			

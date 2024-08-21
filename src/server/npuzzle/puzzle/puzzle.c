@@ -6,7 +6,6 @@
 
 //Link to puzzle.h
 #include "puzzle.h"
-#include <stdlib.h>
 
 
 /*================================= Global variables for convenience =========================== */

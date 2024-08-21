@@ -52,5 +52,5 @@ struct response solution_response(const int, struct state*);
  * Teardown any dynamically allocated memory components in the response
  */
 void teardown_response(struct response);
-#endif
 
+#endif /* RESPONSE_BUILDER_H */

@@ -4,6 +4,11 @@
  */
 
 
+#ifndef PARSER_H
+#define PARSER_H 
+
+#include <stdio.h>
+
 /**
  * The type of HTTP request
  */
@@ -32,3 +37,5 @@ struct request_details{
  * Parse an html request message and return what request type it is 
  */
 struct request_details parse_request(char* http_request);
+
+#endif /* PARSER_H */

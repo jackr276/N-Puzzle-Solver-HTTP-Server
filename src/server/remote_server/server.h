@@ -64,4 +64,4 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
  */
 void run(struct Server* server);
 
-#endif
+#endif /* SERVER_H */
