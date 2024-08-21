@@ -226,7 +226,12 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 
 			//If we are in debug mode, print this path to the console
 			if(solver_mode == 1){
+				//Print the path
 				print_solution_path(solution_path, N, pathlen, num_unique_configs, time_spent_CPU);
+				//Cleanup the path
+				cleanup_solution_path(solution_path);
+				//Return nothing, as it isn't used
+				return NULL;
 			}
 
 			//We've found a solution, so the function should exit 

@@ -6,6 +6,7 @@
 
 //Link to puzzle.h
 #include "puzzle.h"
+#include <stdlib.h>
 
 
 /*================================= Global variables for convenience =========================== */
@@ -692,6 +693,7 @@ void cleanup_fringe_closed(struct state* solution_path, const int N){
 	//cleanup fringe
 	for(int i = 0; i < next_fringe_index; i++){
 		destroy_state(fringe[i]);
+		free(fringe[i]);
 	}
 
 	//Free the fringe array
@@ -704,11 +706,37 @@ void cleanup_fringe_closed(struct state* solution_path, const int N){
 		//so we must check here
 		if(in_solution_path(closed[i], solution_path, N) == 0){
 			destroy_state(closed[i]);
+			free(closed[i]);
 		}
 	}
 
 	//Free the array of pointers
 	free(closed);
+}
+
+
+/**
+ * Define a way of cleaning up the solution path once done with it
+ */
+void cleanup_solution_path(struct state* solution_path){
+	//Assign a cursor for list traversal
+	struct state* cursor = solution_path;
+	struct state* temp;	
+
+	//Iterate over the linked list
+	while(cursor != NULL){
+		//Assign temp to be cursor
+		temp = cursor;
+
+		//Advance cursor for the next round
+		cursor = cursor->next;
+
+		//Free the tiles in cursor
+		destroy_state(temp);
+		
+		//Free temp altogether
+		free(temp);
+	}
 }
 
 
