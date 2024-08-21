@@ -1,9 +1,0 @@
-Here's the idea:
-
-All of these N-Puzzle Solvers online do everything in the front-end via some JS code that solves it. That's why you(the client machine) see your RAM and CPU usage spike when you try to solve one of these things.
-But this is very bad, because JS is very slow, and the state space solver is memory/CPU hungry. It can crash the browser for complex problems.
-
-What if we could instead do this:
-	1.) Have a nice GUI online web interface that just shows us the gameboard
-	2.) Have a multithreaded C server side application that does all of the actual computation for the N-Puzzle game for us. We can then have an efficient, custom network protocol to transfer the N-Puzzle to the webpage.
-	3.) (Maybe) have user input on the client side

@@ -130,7 +130,7 @@ struct response initial_landing_response(){
   			 			       "<input type=\"text\" maxlength = \"1\" id=\"N\" name=\"N\" placeholder=\"N\"><br><br>\r\n"
 			 				   "<label for = \"complexity\">Enter a value for the complexity of the initial configuration:</label>\r\n"
   							   "<input type=\"text\" maxlength = \"3\" id=\"CMP\" name=\"complexity\" placeholder=\"Complexity\"><br><br>\r\n"
-							   "<input type=\"submit\" value=\"Generate Start Config\">\r\n"
+							   "<input type=\"submit\" value=\"Generate Start Configuration and Solve\">\r\n"
 			 				   "</form>\r\n"
              				   "</body>\r\n"
         					   "</html>\r\n\r\n");
@@ -181,16 +181,13 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 	
 	//Add our grid in
 	strcat(r.html, r.grid);
-	
-	//Add a solve button in here
-	strcat(r.html, "<form method=\"POST\">\r\n"
-							  "<input type=\"submit\" value=\"Solve\">\r\n"
-							  "</form>\r\n");
-
-	
+		
 	//Close the entire thing up
 	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
 	
 	//return the response
 	return r;
 }
+
+
+struct response solution_response(const int N, struct state* solution);

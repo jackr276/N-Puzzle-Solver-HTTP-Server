@@ -43,6 +43,12 @@ struct response initial_landing_response();
 struct response initial_config_response(const int, struct state*);
 
 /**
+ * Serve up the response that shows the entire solution after it's 
+ * been found
+ */
+struct response solution_response(const int, struct state*);
+
+/**
  * Teardown any dynamically allocated memory components in the response
  */
 void teardown_response(struct response);
