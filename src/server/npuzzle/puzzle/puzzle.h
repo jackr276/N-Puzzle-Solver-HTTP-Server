@@ -33,10 +33,30 @@ struct state {
 };
 
 
+/**
+ * Define a struct that holds everything that we need for the closed array
+ */
+struct closed {
+	struct state** array;
+	int next_closed_index;
+	int closed_max_size;
+};
+
+
+/**
+ * Define a struct that holds everything that we need for the fringe min heap
+ */
+struct fringe {
+	struct state** heap;
+	int next_fringe_index;
+	int fringe_max_size;
+};
+
+
 /* Method Protoypes */
 void initialize_state(struct state*, const int);
 void destroy_state(struct state*);
-void cleanup_fringe_closed(struct state*, const int);
+void cleanup_fringe_closed(struct fringe*, struct closed*, struct state*, const int);
 void cleanup_solution_path(struct state*);
 void print_state(struct state*, const int, int);
 void copy_state(struct state*, struct state*, const int);
@@ -48,15 +68,14 @@ int states_same(struct state*, struct state*, const int);
 void update_prediction_function(struct state*, int);
 struct state* initialize_goal(const int);
 struct state* generate_start_config(const int, const int);
-void initialize_closed(void);
-void initialize_fringe(void);
-void merge_to_closed(struct state*);
-void priority_queue_insert(struct state*);
+struct closed* initialize_closed(void);
+struct fringe* initialize_fringe(void);
+void merge_to_closed(struct closed*, struct state*);
 struct state* dequeue();
 struct state* generate_start_config(const int, const int);
-int fringe_empty();
-void check_repeating_fringe(struct state**, const int);
-void check_repeating_closed(struct state**, const int);
-int merge_to_fringe(struct state*[4]);
+int fringe_empty(struct fringe*);
+void check_repeating_fringe(struct fringe*, struct state**, const int);
+void check_repeating_closed(struct fringe*, struct state**, const int);
+int merge_to_fringe(struct fringe*, struct state*[4]);
 
 #endif /* PUZZLE_H */

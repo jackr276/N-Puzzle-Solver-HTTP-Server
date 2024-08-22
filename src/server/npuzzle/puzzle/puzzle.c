@@ -8,21 +8,6 @@
 #include "puzzle.h"
 
 
-
-/*================================= Global variables for convenience =========================== */
-//The fringe is the set of all states open for exploration. It is maintained as a minHeap(array) 
-struct state** fringe;
-//Closed is an array containing all sets previously examined. This is used to avoid repeating
-struct state** closed;
-//Define an initial starting size of 5000 for fringe and closed
-int closed_max_size;
-int fringe_max_size;
-//We will keep a reference to the next available closed and fringe indices
-int next_closed_index;
-int next_fringe_index;
-/*============================================================================================== */
-
-
 /**
  * The initialize_state function takes in a pointer to a state and reserves the appropriate space for the dynamic array
  * that holds the tiles 
@@ -363,7 +348,7 @@ struct state* initialize_goal(const int N){
 /**
  * A simple helper function that allocates memory for fringe
  */
-void initialize_fringe(){
+struct fringe* initialize_fringe(){
 	fringe_max_size = ARRAY_START_SIZE;
 	fringe = (struct state**)malloc(sizeof(struct state*) * fringe_max_size);
 	next_fringe_index = 0;
@@ -373,10 +358,19 @@ void initialize_fringe(){
 /**
  * A simple helper function that allocates memory for closed
  */
-void initialize_closed(){
-	closed_max_size = ARRAY_START_SIZE;
-	closed = (struct state**)malloc(sizeof(struct state*) * closed_max_size);
-	next_closed_index = 0;
+struct closed* initialize_closed(){
+	//Allocate memory for closed
+	struct closed* closed = (struct closed*)malloc(sizeof(struct closed));
+	
+	//Initialize these values
+	closed->closed_max_size = ARRAY_START_SIZE;
+	closed->next_closed_index = 0;
+
+	//Reserve space for the internal array
+	closed->array = (struct state**)malloc(sizeof(struct state*) * closed_max_size);
+
+	//Return the closed pointer
+	return closed;
 }
 
 
@@ -384,19 +378,19 @@ void initialize_closed(){
  * A helper function that merges the given statePtr into closed. This function also automatically
  * resizes closed, so the caller does not have to maintain the array
  */
-void merge_to_closed(struct state* statePtr){
+void merge_to_closed(struct closed* closed, struct state* statePtr){
 	//If we run out of space, we can expand
-	if(next_closed_index == closed_max_size){
+	if(closed->next_closed_index == closed->closed_max_size){
 		//Double closed max size
-		closed_max_size *= 2;
+		closed->closed_max_size *= 2;
 		//Reallocate space for closed
-		closed = (struct state**)realloc(closed, sizeof(struct state*) * closed_max_size);
+		closed->array = (struct state**)realloc(closed, sizeof(struct state*) * closed->closed_max_size);
 	}
 
 	//Put curr_state into closed
-	closed[next_closed_index] = statePtr; 
+	closed->array[closed->next_closed_index] = statePtr; 
 	//Keep track of the next closed index
-	next_closed_index++;
+	(closed->next_closed_index)++;
 
 }
 
@@ -423,7 +417,7 @@ static int parent_index(int index){
  * States will be merged into fringe according to their priority values. The lower the total cost,
  * the higher the priority. Since fringe is a minHeap, we will insert accordingly
  */
-void priority_queue_insert(struct state* statePtr){
+static void priority_queue_insert(struct fringe* fringe, struct state* statePtr){
 	//Automatic resize
 	if(next_fringe_index == fringe_max_size){
 		//Just double this value
