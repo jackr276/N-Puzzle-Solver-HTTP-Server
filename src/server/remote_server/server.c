@@ -1,4 +1,4 @@
-/**
+	/**
  * Author: Jack Robbins
  * This file contains the implementation of the functions outlined in server.h
  */  
@@ -19,9 +19,15 @@
 int server_socket;
 
 
+/**
+ * A simple helper function for tearing down thread parameters
+ */
 static void teardown_thread_params(struct server_thread_params* params){
+	//Call respective helper functions for request details and responses
 	cleanup_request_details(params->request_details);
 	teardown_response(params->response);
+
+	//Free the overall pointer
 	free(params);
 }
 
@@ -158,19 +164,15 @@ static void* handle_request(void* server_thread_params){
 		case R_POST:
 			printf("Received a POST request\n");
 			printf("N: %d Complexity: %d \n", params->request_details->N, params->request_details->complexity);
-		
-			//For our initial and goal configs
-			struct state* initial;
-			struct state* goal;
 
 			//Generate the initial starting config
-			initial = generate_start_config(params->request_details->complexity, params->request_details->N);
+			params->initial = generate_start_config(params->request_details->complexity, params->request_details->N);
 			//Generate the goal config too
-			goal = initialize_goal(params->request_details->N);
+			params->goal = initialize_goal(params->request_details->N);
 
 
 			//Generate the config response
-			params->response = initial_config_response(params->request_details->N, initial);
+			params->response = initial_config_response(params->request_details->N, params->initial);
 
 			//Send a response
 			params->bytes_written = send(params->inbound_socket, params->response->html, strlen(params->response->html), 0);
@@ -188,7 +190,7 @@ static void* handle_request(void* server_thread_params){
 			}
 
 			//Attempt to solve the puzzle
-			struct state* solution_path = solve(params->request_details->N, initial, goal, 0);
+			struct state* solution_path = solve(params->request_details->N, params->initial, params->goal, 0);
 
 			//Construct the solution path
 			params->response = solution_response(params->request_details->N, solution_path);
@@ -306,11 +308,15 @@ void run(struct Server* server){
  		struct server_thread_params* params = (struct server_thread_params*)malloc(sizeof(struct server_thread_params));
 		params->inbound_socket = new_socket;
 		params->server = server; 
+		params->request_details = NULL;
+		params->response = NULL;
+		params->initial = NULL;
+		params->goal = NULL;
 
 		//Let the logs know what is happening
 		printf("A new connection has been detected and is being handed to a new server thread.\n");
 
-		//Stack allocate a new thread;
+		//Allocate a new thread;
 		pthread_t request_handler;
 
 		//Create the thread to handle the request

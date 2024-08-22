@@ -14,6 +14,11 @@
  * May not need this but it could be nice
  */
 void teardown_response(struct response* r){
+	//Avoid a bad free attempt
+	if(r == NULL){
+		return;
+	}
+
 	//Free the html
 	if(r->html != NULL){
 		free(r->html);

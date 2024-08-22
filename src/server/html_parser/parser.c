@@ -264,5 +264,7 @@ struct request_details* parse_request(char* http_request){
  * A simple cleaner function that frees all allocated memory
  */
 void cleanup_request_details(struct request_details* request_details){
-	free(request_details);
+	if(request_details != NULL){
+		free(request_details);
+	}
 }

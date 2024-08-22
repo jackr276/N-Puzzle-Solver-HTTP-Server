@@ -54,6 +54,8 @@ struct server_thread_params{
 	ssize_t bytes_written;
 	struct response* response;
 	struct request_details* request_details;	
+	struct state* initial;
+	struct state* goal;
 };
 
 
