@@ -66,6 +66,7 @@ void move_up(struct state*, const int);
 void move_left(struct state*, const int);
 int states_same(struct state*, struct state*, const int);
 void update_prediction_function(struct state*, int);
+void priority_queue_insert(struct fringe*, struct state*);
 struct state* initialize_goal(const int);
 struct state* generate_start_config(const int, const int);
 struct closed* initialize_closed(void);

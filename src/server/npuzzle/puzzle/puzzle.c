@@ -6,8 +6,6 @@
 
 //Link to puzzle.h
 #include "puzzle.h"
-#include <iterator>
-#include <stdlib.h>
 
 
 /**
@@ -428,7 +426,7 @@ static int parent_index(int index){
  * States will be merged into fringe according to their priority values. The lower the total cost,
  * the higher the priority. Since fringe is a minHeap, we will insert accordingly
  */
-static void priority_queue_insert(struct fringe* fringe, struct state* statePtr){
+void priority_queue_insert(struct fringe* fringe, struct state* statePtr){
 	//Automatic resize
 	if(fringe->next_fringe_index == fringe->fringe_max_size){
 		//Just double this value
@@ -649,7 +647,7 @@ void check_repeating_closed(struct closed* closed, struct state** statePtr, cons
  * This function simply iterates through successors, passing the appropriate states along to priority_queue_insert if the pointers
  * are not null
  */
-int merge_to_fringe(struct state* successors[4]){ 
+int merge_to_fringe(struct fringe* fringe, struct state* successors[4]){ 
 	//Keep track of how many valid(not null) successors that we merge in
 	int valid_successors = 0;
 
@@ -659,7 +657,7 @@ int merge_to_fringe(struct state* successors[4]){
 			//If it isn't null, we also know that we have one more unique config, so increment our counterS
 			valid_successors++;
 			//Insert into queue
-			priority_queue_insert(successors[i]);
+			priority_queue_insert(fringe, successors[i]);
 		}
 	}
 	//Return how many valid successors that we had
@@ -698,28 +696,32 @@ static int in_solution_path(struct state* state_ptr, struct state* solution_path
 /**
  * Cleanup the fringe and closed lists when we're done
  */
-void cleanup_fringe_closed(struct state* solution_path, const int N){
+void cleanup_fringe_closed(struct fringe* fringe, struct closed* closed, struct state* solution_path, const int N){
 	//cleanup fringe
-	for(int i = 0; i < next_fringe_index; i++){
-		destroy_state(fringe[i]);
-		free(fringe[i]);
+	for(int i = 0; i < fringe->next_fringe_index; i++){
+		destroy_state(fringe->heap[i]);
+		free(fringe->heap[i]);
 	}
 
 	//Free the fringe array
+	free(fringe->heap);
+	//Free the fringe struct
 	free(fringe);
 
 	//cleanup closed
-	for(int i = 0; i < next_closed_index; i++){
+	for(int i = 0; i < closed->next_closed_index; i++){
 		//NOTE: some of the stuff is fringe is in our solution path,
 		//for obvious reasons, if we destroy those states we will have issues
 		//so we must check here
-		if(in_solution_path(closed[i], solution_path, N) == 0){
-			destroy_state(closed[i]);
-			free(closed[i]);
+		if(in_solution_path(closed->array[i], solution_path, N) == 0){
+			destroy_state(closed->array[i]);
+			free(closed->array[i]);
 		}
 	}
 
 	//Free the array of pointers
+	free(closed->array);
+	//Free the close struct
 	free(closed);
 }
 
