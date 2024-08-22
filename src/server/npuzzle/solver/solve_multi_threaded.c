@@ -87,7 +87,7 @@ static void* generator_worker(void* thread_params){
 	}
 
 	//Threadwork done, no return value will be used
-	return NULL;
+	pthread_exit(NULL);
 }
 
 

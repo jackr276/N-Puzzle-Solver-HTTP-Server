@@ -19,7 +19,9 @@
  */
 void teardown_response(struct response r){
 	//Free the html
-	free(r.html);
+	if(r.html != NULL){
+		free(r.html);
+	}
 
 	//If we have a grid, free that too
 	if(r.grid != NULL){
@@ -189,6 +191,9 @@ struct response initial_config_response(const int N, struct state* state_ptr){
 }
 
 
+/**
+ * Construct the response that shows the full solution path
+ */
 struct response solution_response(const int N, struct state* solution_path){
 	//Stack allocated response
 	struct response r;
@@ -200,7 +205,9 @@ struct response solution_response(const int N, struct state* solution_path){
 	sprintf(r.html, "<h2>Solution Found!</h2><br>\r\n"
 							   "<h2>Solution Path</h2><br>\r\n");	
 
+	//Set these as warnings to the resonse deconstructor
 	r.grid = NULL;
+	r.style = NULL;
 
 	//Define a cursor to traverse our linked list
 	struct state* cursor = solution_path;
@@ -223,6 +230,9 @@ struct response solution_response(const int N, struct state* solution_path){
 
 	//Close the entire thing up
 	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
+
+	//Cleanup the solution path
+	cleanup_solution_path(solution_path);
 
 	//Give the response back
 	return r;

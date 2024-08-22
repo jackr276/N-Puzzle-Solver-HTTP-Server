@@ -137,10 +137,6 @@ static void* handle_request(void* server_thread_params){
 	//If we get here, we know that we got a response that needs to be parsed
 	rd = parse_request(buffer);
 
-	//For debugging
-	//printf("Bytes read: %ld\n", bytes_read);
-	//printf("%s\n", buffer);
-
 	//What kind of request that we have determines the response
 	switch(rd.type){
 		//If we receive a GET request, that means that the user wants to see the landing page
@@ -197,9 +193,6 @@ static void* handle_request(void* server_thread_params){
 
 			//Construct the solution path
 			r = solution_response(N, solution_path);
-	
-			//Cleanup the solution path once we're done with it
-			cleanup_solution_path(solution_path);
 
 			//Send the final response
 			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
