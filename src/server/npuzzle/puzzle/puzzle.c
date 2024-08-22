@@ -8,21 +8,6 @@
 #include "puzzle.h"
 
 
-
-/*================================= Global variables for convenience =========================== */
-//The fringe is the set of all states open for exploration. It is maintained as a minHeap(array) 
-struct state** fringe;
-//Closed is an array containing all sets previously examined. This is used to avoid repeating
-struct state** closed;
-//Define an initial starting size of 5000 for fringe and closed
-int closed_max_size;
-int fringe_max_size;
-//We will keep a reference to the next available closed and fringe indices
-int next_closed_index;
-int next_fringe_index;
-/*============================================================================================== */
-
-
 /**
  * The initialize_state function takes in a pointer to a state and reserves the appropriate space for the dynamic array
  * that holds the tiles 
@@ -363,20 +348,38 @@ struct state* initialize_goal(const int N){
 /**
  * A simple helper function that allocates memory for fringe
  */
-void initialize_fringe(){
-	fringe_max_size = ARRAY_START_SIZE;
-	fringe = (struct state**)malloc(sizeof(struct state*) * fringe_max_size);
-	next_fringe_index = 0;
+struct fringe* initialize_fringe(){
+	//Allocate memory for the fringe struct
+	struct fringe* fringe = (struct fringe*)malloc(sizeof(struct fringe));
+
+	//Initialize these values
+	fringe->fringe_max_size = ARRAY_START_SIZE;
+	fringe->next_fringe_index = 0;
+
+	//Allocate space for the heap
+	fringe->heap = (struct state**)malloc(sizeof(struct state*) * fringe->fringe_max_size);
+
+	//Return a pointer to our fringe in memory
+	return fringe;
 }
 
 
 /**
  * A simple helper function that allocates memory for closed
  */
-void initialize_closed(){
-	closed_max_size = ARRAY_START_SIZE;
-	closed = (struct state**)malloc(sizeof(struct state*) * closed_max_size);
-	next_closed_index = 0;
+struct closed* initialize_closed(){
+	//Allocate memory for closed
+	struct closed* closed = (struct closed*)malloc(sizeof(struct closed));
+	
+	//Initialize these values
+	closed->closed_max_size = ARRAY_START_SIZE;
+	closed->next_closed_index = 0;
+
+	//Reserve space for the internal array
+	closed->array = (struct state**)malloc(sizeof(struct state*) * closed->closed_max_size);
+
+	//Return the closed pointer
+	return closed;
 }
 
 
@@ -384,19 +387,19 @@ void initialize_closed(){
  * A helper function that merges the given statePtr into closed. This function also automatically
  * resizes closed, so the caller does not have to maintain the array
  */
-void merge_to_closed(struct state* statePtr){
+void merge_to_closed(struct closed* closed, struct state* statePtr){
 	//If we run out of space, we can expand
-	if(next_closed_index == closed_max_size){
+	if(closed->next_closed_index == closed->closed_max_size){
 		//Double closed max size
-		closed_max_size *= 2;
+		closed->closed_max_size *= 2;
 		//Reallocate space for closed
-		closed = (struct state**)realloc(closed, sizeof(struct state*) * closed_max_size);
+		closed->array = (struct state**)realloc(closed->array, sizeof(struct state*) * closed->closed_max_size);
 	}
 
 	//Put curr_state into closed
-	closed[next_closed_index] = statePtr; 
+	closed->array[closed->next_closed_index] = statePtr; 
 	//Keep track of the next closed index
-	next_closed_index++;
+	(closed->next_closed_index)++;
 
 }
 
@@ -423,27 +426,27 @@ static int parent_index(int index){
  * States will be merged into fringe according to their priority values. The lower the total cost,
  * the higher the priority. Since fringe is a minHeap, we will insert accordingly
  */
-void priority_queue_insert(struct state* statePtr){
+void priority_queue_insert(struct fringe* fringe, struct state* statePtr){
 	//Automatic resize
-	if(next_fringe_index == fringe_max_size){
+	if(fringe->next_fringe_index == fringe->fringe_max_size){
 		//Just double this value
-		fringe_max_size *= 2;
+		fringe->fringe_max_size *= 2;
 		//Reallocate fringe memory	
-		fringe = (struct state**)realloc(fringe, sizeof(struct state*) * fringe_max_size);
+		fringe->heap = (struct state**)realloc(fringe->heap, sizeof(struct state*) * fringe->fringe_max_size);
 	}
 
 	//Insert value at the very end
-	fringe[next_fringe_index] = statePtr;
+	fringe->heap[fringe->next_fringe_index] = statePtr;
 	//Increment the next fringe index
-	next_fringe_index++;
+	(fringe->next_fringe_index)++;
 
 	//The current index will be used to reheapify after this addition
-	int current_index = next_fringe_index - 1;
+	int current_index = fringe->next_fringe_index - 1;
 
 	//As long as we're in valid bounds, and the priorities of parent and child are backwards
-	while (current_index > 0 && fringe[parent_index(current_index)]->total_cost > fringe[current_index]->total_cost){
+	while (current_index > 0 && fringe->heap[parent_index(current_index)]->total_cost > fringe->heap[current_index]->total_cost){
 		//Swap the two values
-		swap(&fringe[parent_index(current_index)], &fringe[current_index]);
+		swap(&(fringe->heap[parent_index(current_index)]), &(fringe->heap[current_index]));
 
 		//Set the current index to be it's parent, and repeat the process
 		current_index = parent_index(current_index);
@@ -455,7 +458,7 @@ void priority_queue_insert(struct state* statePtr){
  * A recursive function that will heapify fringe following any delete operations. It takes in
  * the index to be min heapified. This is a "down heapify" because we start at the front
  */
-static void min_heapify(int index){
+static void min_heapify(struct fringe* fringe, int index){
 	//Initialize the smallest as the index
 	int smallest = index;
 	//Right and left children of current index
@@ -463,21 +466,21 @@ static void min_heapify(int index){
 	int right_child = index * 2 + 2;
 
 	//If the left child has a lower priority than the index
-	if(left_child < next_fringe_index && fringe[left_child]->total_cost < fringe[index]->total_cost){
+	if(left_child < fringe->next_fringe_index && fringe->heap[left_child]->total_cost < fringe->heap[index]->total_cost){
 		smallest = left_child;
 	}
 
 	//If the right child has a lower priority than the smallest, we want to make sure we have the absolute smallest 
-	if(right_child < next_fringe_index && fringe[right_child]->total_cost < fringe[smallest]->total_cost){
+	if(right_child < fringe->next_fringe_index && fringe->heap[right_child]->total_cost < fringe->heap[smallest]->total_cost){
 		smallest = right_child;
 	}
 
 	//If we found something smaller than index, we must swap
 	if(smallest != index){
 		//Swap the two values
-		swap(&fringe[index], &fringe[smallest]);
+		swap(&(fringe->heap[index]), &(fringe->heap[smallest]));
 		//Recursively call 
-		min_heapify(smallest);
+		min_heapify(fringe, smallest);
 	}
 }
 
@@ -486,18 +489,18 @@ static void min_heapify(int index){
  * Dequeues by removing from the minHeap datastructure. This involves removing value at index 0,
  * replacing it with the very last value, and calling minHeapify()
  */
-struct state* dequeue(){
-	//Save the pointer
-	struct state* dequeued = fringe[0];
+struct state* dequeue(struct fringe* fringe){
+	//Save the pointer, we always take from the front
+	struct state* dequeued = fringe->heap[0];
 	
 	//Put the last element in the front to "prime" the heap
-	fringe[0] = fringe[next_fringe_index - 1];
+	fringe->heap[0] = fringe->heap[fringe->next_fringe_index - 1];
 
 	//Decrement this value
-	next_fringe_index--;
+	(fringe->next_fringe_index)--;
 	
 	//Call minHeapify on index 0 to maintain the heap properly
-	min_heapify(0);
+	min_heapify(fringe, 0);
 
 	//Give the dequeued pointer back
 	return dequeued;
@@ -579,8 +582,8 @@ struct state* generate_start_config(const int complexity, const int N){
 /**
  * A very simple helper function that lets solve know if the fringe is empty
  */
-int fringe_empty(){
-	return next_fringe_index == 0;
+int fringe_empty(struct fringe* fringe){
+	return fringe->next_fringe_index == 0;
 }
 
 
@@ -589,16 +592,16 @@ int fringe_empty(){
  * set the pointer to be null
  * NOTE: since we may modify the memory address of statePtr, we need a reference to that address 
  */
-void check_repeating_fringe(struct state** statePtr, const int N){ 	
+void check_repeating_fringe(struct fringe* fringe, struct state** statePtr, const int N){ 	
 	//If succ_states[i] is NULL, no need to check anything
 	if(*statePtr == NULL){
 		return;
 	}
 
 	//Go through the heap, if we ever find an element that's the same, break out and free the pointer
-	for(int i = 0; i < next_fringe_index; i++){
+	for(int i = 0; i < fringe->next_fringe_index; i++){
 		//If the states match, we free the pointer and exit the loop
-		if(states_same(*statePtr, fringe[i], N)){
+		if(states_same(*statePtr, fringe->heap[i], N)){
 			//Properly tear down the dynamic array in the state to avoid memory leaks
 			destroy_state(*statePtr);
 			//Free the pointer to the state
@@ -617,16 +620,16 @@ void check_repeating_fringe(struct state** statePtr, const int N){
  * using closed as an array is a major speedup for us
  * NOTE: since we may modify the memory address of statePtr, we need a reference to that address 
  */
-void check_repeating_closed(struct state** statePtr, const int N){
+void check_repeating_closed(struct closed* closed, struct state** statePtr, const int N){
 	//If this has already been made null, simply return
 	if(*statePtr == NULL){
 		return;
 	}
 
 	//Go through the entire populated closed array
-	for(int i = next_closed_index - 1; i > -1; i--){
+	for(int i = closed->next_closed_index - 1; i > -1; i--){
 		//If at any point we find that the states are the same
-		if(states_same(closed[i], *statePtr, N)){
+		if(states_same(closed->array[i], *statePtr, N)){
 			//Free both the internal memory and the state pointer itself
 			destroy_state(*statePtr);
 			free(*statePtr);
@@ -644,7 +647,7 @@ void check_repeating_closed(struct state** statePtr, const int N){
  * This function simply iterates through successors, passing the appropriate states along to priority_queue_insert if the pointers
  * are not null
  */
-int merge_to_fringe(struct state* successors[4]){ 
+int merge_to_fringe(struct fringe* fringe, struct state* successors[4]){ 
 	//Keep track of how many valid(not null) successors that we merge in
 	int valid_successors = 0;
 
@@ -654,7 +657,7 @@ int merge_to_fringe(struct state* successors[4]){
 			//If it isn't null, we also know that we have one more unique config, so increment our counterS
 			valid_successors++;
 			//Insert into queue
-			priority_queue_insert(successors[i]);
+			priority_queue_insert(fringe, successors[i]);
 		}
 	}
 	//Return how many valid successors that we had
@@ -693,28 +696,32 @@ static int in_solution_path(struct state* state_ptr, struct state* solution_path
 /**
  * Cleanup the fringe and closed lists when we're done
  */
-void cleanup_fringe_closed(struct state* solution_path, const int N){
+void cleanup_fringe_closed(struct fringe* fringe, struct closed* closed, struct state* solution_path, const int N){
 	//cleanup fringe
-	for(int i = 0; i < next_fringe_index; i++){
-		destroy_state(fringe[i]);
-		free(fringe[i]);
+	for(int i = 0; i < fringe->next_fringe_index; i++){
+		destroy_state(fringe->heap[i]);
+		free(fringe->heap[i]);
 	}
 
 	//Free the fringe array
+	free(fringe->heap);
+	//Free the fringe struct
 	free(fringe);
 
 	//cleanup closed
-	for(int i = 0; i < next_closed_index; i++){
+	for(int i = 0; i < closed->next_closed_index; i++){
 		//NOTE: some of the stuff is fringe is in our solution path,
 		//for obvious reasons, if we destroy those states we will have issues
 		//so we must check here
-		if(in_solution_path(closed[i], solution_path, N) == 0){
-			destroy_state(closed[i]);
-			free(closed[i]);
+		if(in_solution_path(closed->array[i], solution_path, N) == 0){
+			destroy_state(closed->array[i]);
+			free(closed->array[i]);
 		}
 	}
 
 	//Free the array of pointers
+	free(closed->array);
+	//Free the close struct
 	free(closed);
 }
 

@@ -12,7 +12,7 @@
  * Define a structure for holding all of our thread parameters. We will only be using the multithreaded 
  * version of the solver
  */
-struct thread_params{
+struct thread_params {
 	//The predecessor state
 	struct state* predecessor;
 	//0 = leftMove, 1 = rightMove, 2 = downMove, 3 = upMove
@@ -21,6 +21,9 @@ struct thread_params{
 	int N;
 	//The successors array that we will store the states in
 	struct state** successors;
+	//The closed and fringe
+	struct fringe* fringe;
+	struct closed* closed;
 };
 
 

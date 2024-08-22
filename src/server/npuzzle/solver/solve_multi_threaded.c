@@ -80,14 +80,14 @@ static void* generator_worker(void* thread_params){
 	if(moved != NULL){
 		//Now we must check for repeating
 		//Important -- we need to modify the state in successors, not the local copy "moved"
-		check_repeating_closed(&(parameters->successors[option]), N);
-		check_repeating_fringe(&(parameters->successors[option]), N);
+		check_repeating_closed(parameters->closed, &(parameters->successors[option]), N);
+		check_repeating_fringe(parameters->fringe, &(parameters->successors[option]), N);
 		//Update prediction function
 		update_prediction_function(parameters->successors[option], N);
 	}
 
 	//Threadwork done, no return value will be used
-	return NULL;
+	pthread_exit(NULL);
 }
 
 
@@ -95,7 +95,7 @@ static void* generator_worker(void* thread_params){
  * This multi-threaded version of successor generation and validation spawns an individual thread for
  * each of the 4 possible moves, potentially expediting the process of generating and checking successors
  */
-static void generate_successors(struct state* predecessor, struct state** successors, int N){
+static void generate_successors(struct fringe* fringe, struct closed* closed, struct state* predecessor, struct state** successors, int N){
 	//We will create 4 threads, once for each successor potential successor
 	pthread_t thread_arr[4];
 	//We also need 4 thread_param structures 
@@ -112,7 +112,10 @@ static void generate_successors(struct state* predecessor, struct state** succes
 		param_arr[i]->N = N;
 		//Save in successors for storage
 		param_arr[i]->successors = successors;
-		
+		//Pass in refences to closed and fringe
+		param_arr[i]->fringe = fringe;
+		param_arr[i]->closed = closed;	
+
 		//Spawn our worker threads, generator_worker is the thread funtion, and paramArr[i]
 		//is the needed struct input
 		pthread_create(&thread_arr[i], NULL, generator_worker, param_arr[i]);
@@ -171,6 +174,10 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 	} 
 	
 
+	//Create the fringe and closed structues
+	struct fringe* fringe = initialize_fringe();
+	struct closed* closed = initialize_closed();
+
 	//We will keep track of the time taken to execute
 	clock_t begin_CPU = clock();
 
@@ -181,21 +188,17 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 	//Define an array for holding successor states. We can generate at most 4 each time
 	struct state* successors[4];
 
-	//Initialize the closed and fringe lists
-	initialize_closed();
-	initialize_fringe();
-
 	//Put the start_state into fringe to begin the search
-	priority_queue_insert(start_state);
+	priority_queue_insert(fringe, start_state);
 
 	//Maintain a pointer for the current state in the search
 	struct state* curr_state;
 
 	//Algorithm main loop -- while there are still states to be expanded, keep iterating until we find a solution
-	while (!fringe_empty()){
+	while (!fringe_empty(fringe)){
 		//Remove or "pop" the head of the fringe linked list -- because fringe is a priority queue, this is the most
 		//promising state to explore next
-		curr_state = dequeue();
+		curr_state = dequeue(fringe);
 		//Check to see if we have found the solution. If we did, we will print out the solution path and stop
 		if(states_same(curr_state, goal_state, N)){
 			//Stop the clock if we find a solution
@@ -222,7 +225,7 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 			}
 
 			//Cleanup the fringe and closed arrays
-			cleanup_fringe_closed(solution_path, N);
+			cleanup_fringe_closed(fringe, closed, solution_path, N);
 
 			//If we are in debug mode, print this path to the console
 			if(solver_mode == 1){
@@ -244,16 +247,16 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 		 */
 
 		//Generate successors to the current state once we know it isn't a solution
-		generate_successors(curr_state, successors, N);
+		generate_successors(fringe, closed, curr_state, successors, N);
 		
 		/* End multi-threading */
 
 		//Add all necessary states to fringe now that we have checked for repeats and updated predictions 
 		//Additionally, we need to update the num_unique_configs, this will be done in merge_to_fringe
-		num_unique_configs += merge_to_fringe(successors); 
+		num_unique_configs += merge_to_fringe(fringe, successors); 
 	
 		//Add to closed
-		merge_to_closed(curr_state);	
+		merge_to_closed(closed, curr_state);
 
 		//For very complex problems, print the iteration count to the console for a sanity check
 		if(solver_mode == 1 && iteration > 1 && iteration % 1000 == 0) {
@@ -268,6 +271,6 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 	printf("No solution.\n");
 
 	//Cleanup the fringe and closed arrays
-	cleanup_fringe_closed(NULL, N);
+	cleanup_fringe_closed(fringe, closed, NULL, N);
 	return NULL;
 }
