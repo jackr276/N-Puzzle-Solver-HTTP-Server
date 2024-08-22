@@ -49,6 +49,11 @@ struct Server{
 struct server_thread_params{
 	struct Server* server;	
 	int inbound_socket;
+	char buffer[BUFFER];
+	ssize_t bytes_read;
+	ssize_t bytes_written;
+	struct response* response;
+	struct request_details* request_details;	
 };
 
 

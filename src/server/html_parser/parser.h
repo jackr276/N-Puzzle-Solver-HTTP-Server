@@ -8,6 +8,7 @@
 #define PARSER_H 
 
 #include <stdio.h>
+#include <stdlib.h>
 
 /**
  * The type of HTTP request
@@ -32,10 +33,14 @@ struct request_details{
 	int complexity;
 };
 
-
 /**
  * Parse an html request message and return what request type it is 
  */
-struct request_details parse_request(char* http_request);
+struct request_details* parse_request(char*);
+
+/**
+ * Clean up a response by deallocating all memory
+ */
+void cleanup_request_details(struct request_details*);
 
 #endif /* PARSER_H */

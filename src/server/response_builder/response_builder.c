@@ -5,11 +5,7 @@
  */
 
 #include "response_builder.h"
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-
 
 /**
  * Perform any needed teardowns on the heap allocated components of the response, namely
@@ -17,21 +13,24 @@
  * 
  * May not need this but it could be nice
  */
-void teardown_response(struct response r){
+void teardown_response(struct response* r){
 	//Free the html
-	if(r.html != NULL){
-		free(r.html);
+	if(r->html != NULL){
+		free(r->html);
 	}
 
 	//If we have a grid, free that too
-	if(r.grid != NULL){
-		free(r.grid);
+	if(r->grid != NULL){
+		free(r->grid);
 	}
 
 	//If we have CSS, free that as well
-	if(r.style != NULL){
-		free(r.style);
+	if(r->style != NULL){
+		free(r->style);
 	}
+
+	//Free the response struct itself
+	free(r);
 }
 
 
@@ -106,18 +105,18 @@ static char* css_grid_builder(const int N){
 /**
  * Construct the response that the user initially gets on the landing page
  */
-struct response initial_landing_response(){
-	//Stack allocate our response
-	struct response r;
+struct response* initial_landing_response(){
+	//Allocate our response
+	struct response* response = (struct response*)malloc(sizeof(struct response));
 
 	//Save the type in here for later
-	r.type = RSP_INITIAL;
+	response->type = RSP_INITIAL;
 
 	//Allocate the space that we need for our initial html
-	r.html = (char*)malloc(RESPONSE_SIZE);
+	response->html = (char*)malloc(RESPONSE_SIZE);
 
 	//Populate the initial HTML
-	sprintf(r.html, "HTTP/2.0 200 OK\r\n"
+	sprintf(response->html, "HTTP/2.0 200 OK\r\n"
 			 				   "Connection: keep-alive\r\n"
              				   "Content-Type: text/html; charset=UTF-8\r\n"
 			 				   "Keep-Alive: timeout=15, max=1000\r\n\r\n"
@@ -139,31 +138,31 @@ struct response initial_landing_response(){
         					   "</html>\r\n\r\n");
 
 	//We don't have a grid here, so set it to null to alert the freer method
-	r.grid = NULL;
+	response->grid = NULL;
 	//We also don't have CSS, so set it to be null to alert the freer method
-	r.style = NULL;
+	response->style = NULL;
 
 	//Give the response back
-	return r;
+	return response;
 }
 
 
 /**
  * Construct the initial response that displays for the user the grid after they've entered in N, etc.
  */
-struct response initial_config_response(const int N, struct state* state_ptr){ 
-	//Stack allocate our response
-	struct response r;
+struct response* initial_config_response(const int N, struct state* state_ptr){ 
+	//Allocate our response
+	struct response* response = (struct response*)malloc(sizeof(struct response));
 
 	//Generate the grid for our initial response here
-	r.grid = construct_grid_display(N, state_ptr);
+	response->grid = construct_grid_display(N, state_ptr);
 
 	//Allocate the space that we need for our html
-	r.html = (char*)malloc(RESPONSE_SIZE);
+	response->html = (char*)malloc(RESPONSE_SIZE);
 
 
 	//Populate the initial HTML
-	sprintf(r.html, "HTTP/2.0 200 OK\r\n"
+	sprintf(response->html, "HTTP/2.0 200 OK\r\n"
 			 				   "Connection: keep-alive\r\n"
              				   "Content-Type: text/html; charset=UTF-8\r\n"
 			 				   "Keep-Alive: timeout=15, max=1000\r\n\r\n"
@@ -172,42 +171,42 @@ struct response initial_config_response(const int N, struct state* state_ptr){
              				   "<head>\r\n");
 
 	//Create our styles
-	r.style = css_grid_builder(N);
+	response->style = css_grid_builder(N);
 
 	//Add in all needed css
-	strcat(r.html, r.style);
+	strcat(response->html, response->style);
 
 	//Add the remainder in here
-	strcat(r.html,  "<title>N Puzzle Solver</title>\r\n"
+	strcat(response->html,  "<title>N Puzzle Solver</title>\r\n"
              				   "</head>\r\n"
   				               "<body>\r\n"
 						       "<h1>N Puzzle Solver</h1>\r\n");
 	
 	//Add our grid in
-	strcat(r.html, r.grid);
+	strcat(response->html, response->grid);
 		
 	//return the response
-	return r;
+	return response;
 }
 
 
 /**
  * Construct the response that shows the full solution path
  */
-struct response solution_response(const int N, struct state* solution_path){
-	//Stack allocated response
-	struct response r;
+struct response* solution_response(const int N, struct state* solution_path){
+	//Allocated response
+	struct response* response = (struct response*)malloc(sizeof(struct response));
 	
 	//Get some space for our response
-	r.html = (char*)malloc(RESPONSE_SIZE);
+	response->html = (char*)malloc(RESPONSE_SIZE);
 
 	//Add in the initial headings
-	sprintf(r.html, "<h2>Solution Found!</h2><br>\r\n"
+	sprintf(response->html, "<h2>Solution Found!</h2><br>\r\n"
 							   "<h2>Solution Path</h2><br>\r\n");	
 
 	//Set these as warnings to the resonse deconstructor
-	r.grid = NULL;
-	r.style = NULL;
+	response->grid = NULL;
+	response->style = NULL;
 
 	//Define a cursor to traverse our linked list
 	struct state* cursor = solution_path;
@@ -215,25 +214,25 @@ struct response solution_response(const int N, struct state* solution_path){
 	//Traverse the solution path
 	while(cursor != NULL){
 		//If we have a previous grid, we need to free it or else we'll leak
-		if(r.grid != NULL){
-			free(r.grid);
+		if(response->grid != NULL){
+			free(response->grid);
 		}
 		//Remake the new grid 
-		r.grid = construct_grid_display(N,cursor);
+		response->grid = construct_grid_display(N,cursor);
 
 		//Add the grid into our response
-		strcat(r.html, r.grid);
+		strcat(response->html, response->grid);
 
 		//Advance the linked list
 		cursor = cursor->next;
 	}
 
 	//Close the entire thing up
-	strcat(r.html, "</body>\r\n</html>\r\n\r\n");
+	strcat(response->html, "</body>\r\n</html>\r\n\r\n");
 
 	//Cleanup the solution path
 	cleanup_solution_path(solution_path);
 
 	//Give the response back
-	return r;
+	return response;
 }

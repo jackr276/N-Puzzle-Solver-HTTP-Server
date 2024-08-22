@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -16,6 +17,13 @@
 
 //Global variable that holds our socket here
 int server_socket;
+
+
+static void teardown_thread_params(struct server_thread_params* params){
+	cleanup_request_details(params->request_details);
+	teardown_response(params->response);
+	free(params);
+}
 
 
 /**
@@ -45,9 +53,6 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		printf("ERROR: Socket initializiation failed\n");
 		exit(1);
 	}
-	
-	//Debug statement
-	//printf("Socket Initialized\n");
 
 	//Now attempt to bind the socket to the address. If we can't, hard exit
 	if(bind(server.socket, (struct sockaddr*)(&server.socket_addr), sizeof(server.socket_addr)) < 0){
@@ -55,15 +60,12 @@ struct Server create_server(u_int32_t domain, u_int32_t port, u_int32_t service,
 		exit(1);
 	}
 
-	//printf("Socket Bound\n");
  
 	//Finally attempt to begin listening. If that fails, hard exit
 	if(listen(server.socket, server.backlog) < 0){
 		printf("ERROR: Socket failed to start listening\n");
 		exit(1);
 	}
-
-	//printf("Socket Listening\n\n");
 
 	//Return our stack allocated server
 	return server;
@@ -108,20 +110,11 @@ static void* handle_request(void* server_thread_params){
 	//Cast appropriately
 	struct server_thread_params* params = (struct server_thread_params*)(server_thread_params);
 
-	//Allocate our buffer
-	char buffer[BUFFER];
-
-	//Store the size of what we've read
-	ssize_t bytes_read;
-	ssize_t bytes_written;
-	struct response r;
-	struct request_details rd;	
-
 	//Receive data from a connection
-	bytes_read = recv(params->inbound_socket, buffer, BUFFER, 0);
+	params->bytes_read = recv(params->inbound_socket, params->buffer, BUFFER, 0);
 	
 	//If we didn't read anything, we will close the socket and leave
-	if(bytes_read < 0){
+	if(params->bytes_read < 0){
 		printf("No data received from client\n");
 
 		//Shutdown the socket
@@ -130,27 +123,32 @@ static void* handle_request(void* server_thread_params){
 		//Request is handled, close the new socket
 		close(params->inbound_socket);	
 
+		//Param cleanup
+		teardown_thread_params(params);
+
 		return NULL;
 	}
 
-	printf("%s\n", buffer);
+	printf("%s\n", params->buffer);
 	//If we get here, we know that we got a response that needs to be parsed
-	rd = parse_request(buffer);
+	params->request_details = parse_request(params->buffer);
 
 	//What kind of request that we have determines the response
-	switch(rd.type){
+	switch(params->request_details->type){
 		//If we receive a GET request, that means that the user wants to see the landing page
 		case R_GET: 
 			printf("Received a GET request\n");
 			//Craft our response
-			r = initial_landing_response();
+			params->response = initial_landing_response();
 
 			//Send a response
-			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+			params->bytes_written = send(params->inbound_socket, params->response->html, strlen(params->response->html), 0);
 
 			//If the client did not get our data, we have an error
-			if(bytes_written == -1){
+			if(params->bytes_written == -1){
 				printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
+				//Param cleanup
+				teardown_thread_params(params);
 				return NULL;
 			}
 
@@ -159,43 +157,44 @@ static void* handle_request(void* server_thread_params){
 		//A post request means that we want to solve the entire puzzle
 		case R_POST:
 			printf("Received a POST request\n");
-			printf("N: %d Complexity: %d \n", rd.N, rd.complexity);
+			printf("N: %d Complexity: %d \n", params->request_details->N, params->request_details->complexity);
 		
 			//For our initial and goal configs
 			struct state* initial;
 			struct state* goal;
 
 			//Generate the initial starting config
-			initial = generate_start_config(rd.complexity, rd.N);
+			initial = generate_start_config(params->request_details->complexity, params->request_details->N);
 			//Generate the goal config too
-			goal = initialize_goal(rd.N);
+			goal = initialize_goal(params->request_details->N);
 
-			//Store N for later
-			const int N = rd.N;
 
 			//Generate the config response
-			r = initial_config_response(rd.N, initial);
+			params->response = initial_config_response(params->request_details->N, initial);
 
 			//Send a response
-			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+			params->bytes_written = send(params->inbound_socket, params->response->html, strlen(params->response->html), 0);
+
+			//Free up our response here
+			teardown_response(params->response);
 
 			//If the client did not get our data, we have an error
-			if(bytes_written == -1){
+			if(params->bytes_written == -1){
 				printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
+				//Parameter cleanup
+				teardown_thread_params(params);
+
 				return NULL;
 			}
 
-			//Free up the resonse
-			teardown_response(r);
-
 			//Attempt to solve the puzzle
-			struct state* solution_path = solve(N, initial, goal, 0);
+			struct state* solution_path = solve(params->request_details->N, initial, goal, 0);
 
 			//Construct the solution path
-			r = solution_response(N, solution_path);
+			params->response = solution_response(params->request_details->N, solution_path);
 
 			//Send the final response
-			bytes_written = send(params->inbound_socket, r.html, strlen(r.html), 0);
+			params->bytes_written = send(params->inbound_socket, params->response->html, strlen(params->response->html), 0);
 
 			break;
 			
@@ -209,9 +208,9 @@ static void* handle_request(void* server_thread_params){
 
 	//Request is handled, close the new socket
 	close(params->inbound_socket);
-
-	//Free up our response
-	teardown_response(r);
+	
+	//Parameter cleanup
+	teardown_thread_params(params);
 
 	//Exit the thread
 	printf("Request handled successfully.\n");
@@ -304,9 +303,9 @@ void run(struct Server* server){
 		int new_socket = accept(server->socket, (struct sockaddr*)(&server->socket_addr), (socklen_t*)(&address_length));
 	
 		//Stack allocate a thread paramater structure
-		struct server_thread_params params;
-		params.inbound_socket = new_socket;
-		params.server = server; 
+ 		struct server_thread_params* params = (struct server_thread_params*)malloc(sizeof(struct server_thread_params));
+		params->inbound_socket = new_socket;
+		params->server = server; 
 
 		//Let the logs know what is happening
 		printf("A new connection has been detected and is being handed to a new server thread.\n");
@@ -315,6 +314,6 @@ void run(struct Server* server){
 		pthread_t request_handler;
 
 		//Create the thread to handle the request
-		pthread_create(&request_handler, NULL, handle_request, &params);
+		pthread_create(&request_handler, NULL, handle_request, params);
 	}
 }

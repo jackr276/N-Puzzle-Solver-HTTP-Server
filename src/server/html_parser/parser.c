@@ -5,7 +5,6 @@
  */
 
 #include "parser.h"
-#include <stdio.h>
 
 /**
  * A non destructive get_next_char method that preserves the original string.
@@ -26,16 +25,17 @@ static char get_next_char(char* string, unsigned int* current_ptr){
 /**
  * Take in a request string and determine what type of request that we have
  */
-struct request_details parse_request(char* http_request){
+struct request_details* parse_request(char* http_request){
 	char c;
 	unsigned int current_ptr = 0;
 	
-	//Stack allocate our request details
-	struct request_details details;
+	//Allocate our request details
+	struct request_details* details = (struct request_details*)malloc(sizeof(struct request_details));
+
 	//By default, we are in an error state because we haven't yet parsed
-	details.type = R_ERR;
-	details.N = -1;
-	details.complexity = -1;
+	details->type = R_ERR;
+	details->N = -1;
+	details->complexity = -1;
 	
 	//Continuously grab the next character until we hit the end
 	while((c = get_next_char(http_request,   &current_ptr)) != '\0'){
@@ -58,7 +58,7 @@ struct request_details parse_request(char* http_request){
 				}
 				
 				//If we made it here, we know that we have a GET request so update the details
-				details.type = R_GET;
+				details->type = R_GET;
 				break;
  
 			//If we see this, we could be at the start of a POST request
@@ -85,13 +85,13 @@ struct request_details parse_request(char* http_request){
 				}
 				
 				//If we do make it here, we know that we have the beginnings of a post request	
-				details.type = R_POST;
+				details->type = R_POST;
 				break;
 
 			//If we see this and we are in a POST request, this is our N value
 			case 'N':
 				//If we didn't already find a post request then we don't care
-				if(details.type != R_POST){
+				if(details->type != R_POST){
 					break;
 				}
 
@@ -113,13 +113,13 @@ struct request_details parse_request(char* http_request){
 				}
 				
 				//We found our N
-				details.N = num - '0';
+				details->N = num - '0';
 				break;
 
 			//If we see this and we are in a post request, then this is our complexity value
 			case 'c':
 				//If we are not in a post request, then we don't care
-				if(details.type != R_POST){
+				if(details->type != R_POST){
 					break;
 				}
 
@@ -196,7 +196,7 @@ struct request_details parse_request(char* http_request){
 						//Put it back
 						current_ptr--;
 						//Put our details into an error state
-						details.type = R_ERR;
+						details->type = R_ERR;
 						break;
 					}
 
@@ -204,11 +204,11 @@ struct request_details parse_request(char* http_request){
 					ones = ch - '0';
 
 					//Currently, our complexity is just the ones
-					details.complexity = ones;
+					details->complexity = ones;
 
 				//If we get here, we say an equals with no value, so we have a bad request
 				} else {
-					details.type = R_ERR;
+					details->type = R_ERR;
 					return details;
 				}
 
@@ -226,7 +226,7 @@ struct request_details parse_request(char* http_request){
 					ones = ch - '0';
 
 					//Now currently our complexity is the ones and tens;
-					details.complexity = tens * 10 + ones;
+					details->complexity = tens * 10 + ones;
 				
 				//If we do get here, it means that we saw a null terminator, so the request is over
 				} else {
@@ -247,7 +247,7 @@ struct request_details parse_request(char* http_request){
 					ones = ch - '0';
 
 					//Now our comlexity is this 
-					details.complexity = hundreds * 100 + tens * 10 + ones;
+					details->complexity = hundreds * 100 + tens * 10 + ones;
 
 				//If we do get here, it means that we found the null terminator, so the request is over
 				} else {
@@ -257,4 +257,12 @@ struct request_details parse_request(char* http_request){
 	}
 
 	return details;
+}
+
+
+/**
+ * A simple cleaner function that frees all allocated memory
+ */
+void cleanup_request_details(struct request_details* request_details){
+	free(request_details);
 }
