@@ -71,11 +71,11 @@ struct state* generate_start_config(const int, const int);
 struct closed* initialize_closed(void);
 struct fringe* initialize_fringe(void);
 void merge_to_closed(struct closed*, struct state*);
-struct state* dequeue();
+struct state* dequeue(struct fringe*);
 struct state* generate_start_config(const int, const int);
 int fringe_empty(struct fringe*);
 void check_repeating_fringe(struct fringe*, struct state**, const int);
-void check_repeating_closed(struct fringe*, struct state**, const int);
+void check_repeating_closed(struct closed*, struct state**, const int);
 int merge_to_fringe(struct fringe*, struct state*[4]);
 
 #endif /* PUZZLE_H */
