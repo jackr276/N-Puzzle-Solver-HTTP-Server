@@ -6,7 +6,7 @@
 #ifndef RESPONSE_BUILDER_H
 #define RESPONSE_BUILDER_H
 
-#define RESPONSE_SIZE 20000
+#define RESPONSE_SIZE 50000
 
 #include "../npuzzle/puzzle/puzzle.h"
 #include <stdio.h>
