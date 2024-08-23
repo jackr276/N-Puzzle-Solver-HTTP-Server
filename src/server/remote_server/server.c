@@ -135,7 +135,6 @@ static void* handle_request(void* server_thread_params){
 		return NULL;
 	}
 
-	printf("%s\n", params->buffer);
 	//If we get here, we know that we got a response that needs to be parsed
 	params->request_details = parse_request(params->buffer);
 
@@ -195,8 +194,18 @@ static void* handle_request(void* server_thread_params){
 			//Construct the solution path
 			params->response = solution_response(params->request_details->N, solution_path);
 
+
 			//Send the final response
 			params->bytes_written = send(params->inbound_socket, params->response->html, strlen(params->response->html), 0);
+
+			//If the client did not get our data, we have an error
+			if(params->bytes_written == -1){
+				printf("ERROR: Client did not receive sent data. Connection will be closed.\n");
+				//Parameter cleanup
+				teardown_thread_params(params);
+
+				return NULL;
+			}
 
 			break;
 			

@@ -155,7 +155,7 @@ void print_solution_path(struct state* solution_path, const int N, int pathlen, 
 	printf("Memory consumed: %.2f MB\n", (sizeof(struct state) + N*N*sizeof(short)) * num_unique_configs / 1048576.0);
 	//Print out CPU time(NOT wall time) spent
 	printf("Total CPU time spent: %.7f seconds\n\n", time_spent_CPU);	
-	printf("==========================================================\n\n");
+	printf("===========================================================\n\n");
 }
 
 
@@ -199,6 +199,7 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 		//Remove or "pop" the head of the fringe linked list -- because fringe is a priority queue, this is the most
 		//promising state to explore next
 		curr_state = dequeue(fringe);
+
 		//Check to see if we have found the solution. If we did, we will print out the solution path and stop
 		if(states_same(curr_state, goal_state, N)){
 			//Stop the clock if we find a solution
@@ -213,6 +214,11 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 			//Keep a linked list for our solution path
 			struct state* solution_path = NULL;
 		
+			//If the solver mode is 0, just return the current state and we'll have a separate thread handle the construction
+			if(solver_mode == 0){
+				return curr_state;
+			}
+
 			//Put the states into the solution path in reverse order(insert at the head) using their predecessor
 			while(curr_state != NULL){
 				//Insert the current state at the head of solution path
