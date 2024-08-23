@@ -214,11 +214,6 @@ struct state* solve(int N, struct state* start_state, struct state* goal_state, 
 			//Keep a linked list for our solution path
 			struct state* solution_path = NULL;
 		
-			//If the solver mode is 0, just return the current state and we'll have a separate thread handle the construction
-			if(solver_mode == 0){
-				return curr_state;
-			}
-
 			//Put the states into the solution path in reverse order(insert at the head) using their predecessor
 			while(curr_state != NULL){
 				//Insert the current state at the head of solution path

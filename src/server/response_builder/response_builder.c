@@ -197,7 +197,7 @@ struct response* initial_config_response(const int N, struct state* state_ptr){
 /**
  * Construct the response that shows the full solution path
  */
-struct response* solution_response(const int N, struct state* solution){
+struct response* solution_response(const int N, struct state* solution_path){
 	//Allocated response
 	struct response* response = (struct response*)malloc(sizeof(struct response));
 	
@@ -211,20 +211,6 @@ struct response* solution_response(const int N, struct state* solution){
 	//Set these as warnings to the resonse deconstructor
 	response->grid = NULL;
 	response->style = NULL;
-
-	//Initialize as null
-	struct state* solution_path = NULL;
-
-	//We now need to reverse the linked list
-	while(solution != NULL){
-		print_state(solution, N, 0);
-		//Append to head
-		solution->next = solution_path;
-		//Reassign the head
-		solution_path = solution;
-		//Go to the predecessor
-		solution = solution->predecessor;
-	}
 
 	//Define a cursor to traverse our linked list
 	struct state* cursor = solution_path;

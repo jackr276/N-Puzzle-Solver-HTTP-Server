@@ -15,6 +15,8 @@
 void initialize_state(struct state* statePtr, const int N){
 	//Declare all of the pointers needed for each row
 	statePtr->tiles = (short*)malloc(sizeof(short) * N * N);
+	statePtr->predecessor = NULL;
+	statePtr->next = NULL;
 }
 
 
