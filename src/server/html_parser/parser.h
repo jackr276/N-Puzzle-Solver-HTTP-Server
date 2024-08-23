@@ -36,11 +36,11 @@ struct request_details{
 /**
  * Parse an html request message and return what request type it is 
  */
-struct request_details* parse_request(char*);
+struct request_details* parse_request(char* request);
 
 /**
  * Clean up a response by deallocating all memory
  */
-void cleanup_request_details(struct request_details*);
+void cleanup_request_details(struct request_details* request_details);
 
 #endif /* PARSER_H */

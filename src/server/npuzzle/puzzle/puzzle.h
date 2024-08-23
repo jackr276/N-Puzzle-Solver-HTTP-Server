@@ -54,29 +54,28 @@ struct fringe {
 
 
 /* Method Protoypes */
-void initialize_state(struct state*, const int);
-void destroy_state(struct state*);
-void cleanup_fringe_closed(struct fringe*, struct closed*, struct state*, const int);
-void cleanup_solution_path(struct state*);
-void print_state(struct state*, const int, int);
-void copy_state(struct state*, struct state*, const int);
-void move_down(struct state*, const int);
-void move_right(struct state*, const int);
-void move_up(struct state*, const int);
-void move_left(struct state*, const int);
-int states_same(struct state*, struct state*, const int);
-void update_prediction_function(struct state*, int);
-void priority_queue_insert(struct fringe*, struct state*);
-struct state* initialize_goal(const int);
-struct state* generate_start_config(const int, const int);
+void initialize_state(struct state* state_ptr, const int N);
+void destroy_state(struct state* state_ptr);
+void cleanup_fringe_closed(struct fringe* fringe, struct closed* closed, struct state* state_ptr, const int N);
+void cleanup_solution_path(struct state* solution);
+void print_state(struct state* state_ptr, const int N, int option);
+void copy_state(struct state* predecessor, struct state* successor, const int N);
+void move_down(struct state* state_ptr, const int N);
+void move_right(struct state* state_ptr, const int N);
+void move_up(struct state* state_ptr, const int N);
+void move_left(struct state* state_ptr, const int N);
+int states_same(struct state* a, struct state* b, const int N);
+void update_prediction_function(struct state* state_ptr, int N);
+void priority_queue_insert(struct fringe* fringe, struct state* state_ptr);
+struct state* initialize_goal(const int N);
+struct state* generate_start_config(const int complexity, const int N);
 struct closed* initialize_closed(void);
 struct fringe* initialize_fringe(void);
-void merge_to_closed(struct closed*, struct state*);
-struct state* dequeue(struct fringe*);
-struct state* generate_start_config(const int, const int);
-int fringe_empty(struct fringe*);
-void check_repeating_fringe(struct fringe*, struct state**, const int);
-void check_repeating_closed(struct closed*, struct state**, const int);
-int merge_to_fringe(struct fringe*, struct state*[4]);
+void merge_to_closed(struct closed* closed, struct state* state_ptr);
+struct state* dequeue(struct fringe* fringe);
+int fringe_empty(struct fringe* fringe);
+void check_repeating_fringe(struct fringe* fringe, struct state** state_ptr, const int N);
+void check_repeating_closed(struct closed* closed, struct state** state_ptr, const int N);
+int merge_to_fringe(struct fringe* fringe, struct state* successors[4]);
 
 #endif /* PUZZLE_H */

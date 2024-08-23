@@ -44,17 +44,17 @@ struct response* initial_landing_response();
 /**
  * Serve up the response that has the initial grid displayed
  */
-struct response* initial_config_response(const int, struct state*);
+struct response* initial_config_response(const int N, struct state* state_ptr);
 
 /**
  * Serve up the response that shows the entire solution after it's 
  * been found
  */
-struct response* solution_response(const int, struct state*);
+struct response* solution_response(const int N, struct state* solution);
 
 /**
  * Teardown any dynamically allocated memory components in the response
  */
-void teardown_response(struct response*);
+void teardown_response(struct response* response);
 
 #endif /* RESPONSE_BUILDER_H */
