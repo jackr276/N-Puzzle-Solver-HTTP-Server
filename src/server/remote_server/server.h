@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <netdb.h>
 
 #include "../response_builder/response_builder.h"
 #include "../html_parser/parser.h"

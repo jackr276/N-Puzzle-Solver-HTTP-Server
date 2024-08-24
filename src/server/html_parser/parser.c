@@ -256,6 +256,7 @@ struct request_details* parse_request(char* http_request){
 		}
 	}
 
+	//Return the pointer
 	return details;
 }
 

@@ -5,15 +5,7 @@
 
 #include "server.h"
 //For multithreading
-#include <netinet/in.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <netdb.h>
 
 //Global variable that holds our socket here
 int server_socket;
