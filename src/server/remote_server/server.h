@@ -24,7 +24,7 @@
 #include <netdb.h>
 
 #include "../response_builder/response_builder.h"
-#include "../html_parser/parser.h"
+#include "../http_parser/parser.h"
 #include "../npuzzle/puzzle/puzzle.h"
 #include "../npuzzle//solver//solve.h"
 
