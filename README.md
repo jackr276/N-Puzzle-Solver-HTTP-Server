@@ -22,7 +22,9 @@ For the purposes of this project, this subsystem does all of the work when it co
 The response builder subsystem is responsible for constructing the HTML that will be served in response to a request. The HTML constructed is based on the type of the request, which is why the parser subsystem is needed. Unlike some web servers, the HTML here is not served up through files, but as strings that are constructed and then sent over the socket connection. This decision was made because it is impossible to predict how long a solution to a certain N-Puzzle is, and as such impossible to make a set HTML file to serve up. This way of doing things allows for the server to dynamically serve data based on the solution to the given problem.
 
 ### [Server](https://github.com/jackr276/N-Puzzle-Solver-HTTP-Server/tree/main/src/server/remote_server)
-The server subsystem is the one that glues the previous 3 together. It uses sockets to maintain connections and send data, and is designed to be able to handle several concurrent connections at once. This is achieved through multithreading, and each client connection being granted its own individual server thread. The source code files themselves are very well documented and easy to read, so if you're interested in further in depth details of the subsystem, I'd recommend looking through them yourself.
+The server subsystem is the one that glues the previous 3 together. It uses sockets to maintain connections and send data, and is designed to be able to handle several concurrent connections at once. This is achieved through multithreading, and each client connection being granted its own individual server thread. The source code files themselves are very well documented and easy to read, so if you're interested in further in depth details of the subsystem, I'd recommend looking through them yourself.   
+
+These modules all mesh and interact to provide the remote server and N-Puzzle solver functionality.
 
 ## Running this program
 After cloning the repository and navigating to the directory where it was downloaded, run the following command to give the runner script executable privileges:
@@ -31,5 +33,9 @@ example@bash: ~/N-Puzzle-Solver-HTTP-Server $ chmod +x run.sh
 ```
 Following this step, the video below details the full functionality of the project, and how to use it:   
 
+### Demonstration
 https://github.com/user-attachments/assets/658c3008-3850-417f-8e93-d1c65d70f9fc
 
+
+## Future ideas and potential improvements
+This project has been a bit of a rabbit hole in terms of learning about networking, signals, and so much more. I do think that there are 2 main places for improvement. The first being some kind of memory suballocation system. There are so many calls to `malloc`, especially in the N-Puzzle Solver system, that do slow down the entire operation. I think that a custom memory pool system that allocates a large chunk of memory and then divides it up amongst recipients would be a great way to improve speed. Along the same lines of memory pooling, the calls to the creation/deletion of threads are also expensive and slow down the operation. Some kind of thread pool system that creates many threads at once, and allows for the reuse of already created threads, would greatly improve the performance. I have my eye on both of these for future projects.
